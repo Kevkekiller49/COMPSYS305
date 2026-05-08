@@ -58,13 +58,14 @@ architecture wiring of game_top_level is
 		VGA_G <= (others => green_out_internal);
 		VGA_B <= (others => blue_out_internal);
 		VGA_VS <= vert_sync_internal;
-		VGA_DRIVER : component VGA_SYNC
 		HEX0 <= (others => '1'); 
 		HEX1 <= (others => '1'); 
 		HEX2 <= (others => '1');
 		HEX3 <= (others => '1'); 
 		HEX4 <= (others => '1'); 
 		HEX5 <= (others => '1');
+		
+		VGA_DRIVER : component VGA_SYNC
 		
 		port map(
 			clock_25Mhz => clk_25,
