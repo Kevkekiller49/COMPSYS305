@@ -15,7 +15,7 @@ end entity game_top_level;
 architecture wiring of game_top_level is
 	signal clk_25 : std_logic;
 	signal pixel_row, pixel_column, mouse_x, mouse_y : std_logic_vector(9 downto 0);
-	signal red_pixel, green_pixel, blue_pixel, left_click, right_click : std_logic;
+	signal red_pixel, green_pixel, blue_pixel, left_click, right_click, internal_button_0, internal_button_1, internal_button_2, red_out_internal, green_out_internal, blue_out_internal, vert_sync_internal : std_logic;
 	
 	component VGA_SYNC is
 		port(
@@ -52,51 +52,59 @@ architecture wiring of game_top_level is
 		end process;
 		
 		internal_button_0 <= NOT KEY(0);
-		VGA_R <= (others => red_pixel);   -- This sends the 1-bit to all 4 pins
-		VGA_G <= (others => green_pixel);
-		VGA_B <= (others => blue_pixel);
-		
+		internal_button_1 <= NOT KEY(1);
+		internal_button_2 <= NOT KEY(2);	
+		VGA_R <= (others => red_out_internal);   -- This sends the 1-bit to all 4 pins
+		VGA_G <= (others => green_out_internal);
+		VGA_B <= (others => blue_out_internal);
+		VGA_VS <= vert_sync_internal;
 		VGA_DRIVER : component VGA_SYNC
+		HEX0 <= (others => '1'); 
+		HEX1 <= (others => '1'); 
+		HEX2 <= (others => '1');
+		HEX3 <= (others => '1'); 
+		HEX4 <= (others => '1'); 
+		HEX5 <= (others => '1');
+		
 		port map(
-			clock_25m => clk_25,
+			clock_25Mhz => clk_25,
 			red => red_pixel, -- Internal 1-bit signal
 			blue => blue_pixel, -- Internal 1-bit signal
 			green => green_pixel, -- Internal 1-bit signal
-			red_out => open,  -- We use our own 4-bit mapping above
-			green_out => open, 
-			blue_out => open,
+			red_out => red_out_internal,  -- We use our own 4-bit mapping above
+			green_out => green_out_internal, 
+			blue_out => green_out_internal,
 			horiz_sync_out => VGA_HS,
-			vert_sync_out => VGA_VS,
+			vert_sync_out => vert_sync_internal,
 			pixel_row => pixel_row,
 			pixel_column => pixel_column
 			);
 			
 		MOUSE_MAP : component MOUSE
 		port map(
-			clock_25m => clk_25,
+			clock_25Mhz => clk_25,
 			reset => SW(0), -- Using a switch for reset
 			mouse_data => PS2_DAT, -- Physical INOUT pin from entity
 			mouse_clk => PS2_CLK, -- Physical INOUT pin from entity
 			left_button => left_click, 
 			right_button => right_click, 
 			mouse_cursor_row => mouse_y,
-			mouse_cursor_column => mouse_x,
+			mouse_cursor_column => mouse_x
 			);
 			
 		BALL_UNIT : component BOUNCY_BALL
-		port map(red_in
+		port map(
 			clk => clk_25,
-			vert_sync       => VGA_VS, -- Uses sync from VGA_SYNC for timing
-			pb1             => NOT KEY(1), -- Ball control 1 (Active High internally)
-			pb2             => NOT KEY(2), -- Ball control 2 (Active High internally)
+			vert_sync       => vert_sync_internal, -- Uses sync from VGA_SYNC for timing
+			pb1             => internal_button_1, -- Ball control 1 (Active High internally)
+			pb2             => internal_button_2, -- Ball control 2 (Active High internally)
 			pixel_row        => pixel_row, 
 			pixel_column      => pixel_column, 
 			red       => red_pixel,
 			green => green_pixel,
-			blue  => blue_pixel,
+			blue  => blue_pixel
 			);
 			
 		LEDR(9 downto 0) <= SW(9 downto 0); -- Lights up the LED above every flipped switch
-		LEDR(3 downto 0) <= NOT KEY(3 downto 0); -- The LEDs will light up when you press the buttons
 end architecture wiring;
 		
