@@ -74,7 +74,7 @@ architecture wiring of game_top_level is
 			green => green_pixel, -- Internal 1-bit signal
 			red_out => red_out_internal,  -- We use our own 4-bit mapping above
 			green_out => green_out_internal, 
-			blue_out => green_out_internal,
+			blue_out => blue_out_internal,
 			horiz_sync_out => VGA_HS,
 			vert_sync_out => vert_sync_internal,
 			pixel_row => pixel_row,
