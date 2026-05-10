@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
 
 entity game_top_level is
 	port(CLOCK_50 : in std_logic;
@@ -16,7 +17,10 @@ architecture wiring of game_top_level is
 	signal clk_25 : std_logic;
 	signal pixel_row, pixel_column, mouse_x, mouse_y : std_logic_vector(9 downto 0);
 	signal red_pixel, green_pixel, blue_pixel, left_click, right_click, internal_button_0, internal_button_1, internal_button_2, red_out_internal, green_out_internal, blue_out_internal, vert_sync_internal : std_logic;
-	
+	signal ball_y_pos_display : std_logic_vector(9 downto 0);
+	signal hundreds, tens, ones : std_logic_vector(3 downto 0);	
+	signal vert_sync_gated : std_logic; 
+
 	component VGA_SYNC is
 		port(
 			clock_25Mhz, red, green, blue		: in std_logic;
@@ -39,7 +43,8 @@ architecture wiring of game_top_level is
 			pb1, pb2	: in std_logic;
 			pixel_row	: in std_logic_vector(9 downto 0);
 			pixel_column	: in std_logic_vector(9 downto 0);
-			red, green, blue: out std_logic
+			red, green, blue: out std_logic;
+			ball_y_out : out std_logic_vector(9 downto 0)
 		);
 	end component;
 	
@@ -64,7 +69,9 @@ architecture wiring of game_top_level is
 		HEX3 <= (others => '1'); 
 		HEX4 <= (others => '1'); 
 		HEX5 <= (others => '1');
+		vert_sync_gated <= vert_sync_internal AND (NOT SW(9)); -- when dip switch 9 is high = pause
 		
+
 		VGA_DRIVER : component VGA_SYNC
 		
 		port map(
@@ -96,14 +103,15 @@ architecture wiring of game_top_level is
 		BALL_UNIT : component BOUNCY_BALL
 		port map(
 			clk => clk_25,
-			vert_sync       => vert_sync_internal, -- Uses sync from VGA_SYNC for timing
+			vert_sync       => vert_sync_gated, 
 			pb1             => internal_button_1, -- Ball control 1 (Active High internally)
 			pb2             => internal_button_2, -- Ball control 2 (Active High internally)
 			pixel_row        => pixel_row, 
 			pixel_column      => pixel_column, 
 			red       => red_pixel,
 			green => green_pixel,
-			blue  => blue_pixel
+			blue  => blue_pixel,
+			ball_y_out => ball_y_pos_display
 			);
 			
 		LEDR(9 downto 0) <= SW(9 downto 0); -- Lights up the LED above every flipped switch
