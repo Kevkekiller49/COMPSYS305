@@ -20,12 +20,18 @@ architecture wiring of game_top_level is
 	signal ball_y_pos_display : std_logic_vector(9 downto 0);
 	signal hundreds, tens, ones : std_logic_vector(3 downto 0);	
 	signal vert_sync_gated : std_logic; 
+		
 
 	component VGA_SYNC is
 		port(
 			clock_25Mhz, red, green, blue		: in std_logic;
 			red_out, green_out, blue_out, horiz_sync_out, vert_sync_out	: out std_logic;
 			pixel_row, pixel_column: out std_logic_vector(9 downto 0));
+	end component;
+
+	component BCD_to_SevenSeg is
+		port( BCD_digit : in std_logic_vector(3 downto 0);
+		      SevenSeg_out : out std_logic_vector(6 downto 0));
 	end component;
 	
 	component MOUSE is
@@ -63,14 +69,37 @@ architecture wiring of game_top_level is
 		VGA_G <= (others => green_out_internal);
 		VGA_B <= (others => blue_out_internal);
 		VGA_VS <= vert_sync_internal;
-		HEX0 <= (others => '1'); 
-		HEX1 <= (others => '1'); 
-		HEX2 <= (others => '1');
-		HEX3 <= (others => '1'); 
-		HEX4 <= (others => '1'); 
-		HEX5 <= (others => '1');
 		vert_sync_gated <= vert_sync_internal AND (NOT SW(9)); -- when dip switch 9 is high = pause
+		process(ball_y_pos_display)
+			variable tempval : integer range 0 to 999;
+		begin
+			tempval := to_integer(unsigned(ball_y_pos_display));
+			hundreds <= std_logic_vector(to_unsigned(temp / 100, 4));
+			tens <= std_logic_vector(to_unsigned((temp mod 100) / 10, 4));
+			ones <= std_logic_vector(to_unsigned(temp mod 10, 4));
+		end process;
+
+		SEG_ONES : component BCD_to_SevenSeg
+		port map(
+    			BCD_digit    => ones,
+    			SevenSeg_out => HEX0
+			);
+
+		SEG_TENS : component BCD_to_SevenSeg
+		port map(
+    			BCD_digit    => tens,
+    			SevenSeg_out => HEX1
+		);
+
+		SEG_HUNDREDS : component BCD_to_SevenSeg
+		port map(
+    			BCD_digit    => hundreds,
+   		 	SevenSeg_out => HEX2
+		);
 		
+		HEX3 <= (others => '1');
+		HEX4 <= (others => '1');
+		HEX5 <= (others => '1');
 
 		VGA_DRIVER : component VGA_SYNC
 		
