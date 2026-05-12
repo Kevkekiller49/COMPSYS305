@@ -24,7 +24,7 @@ SIGNAL size        : std_logic_vector(9 DOWNTO 0);
 SIGNAL ball_x_pos  : std_logic_vector(9 DOWNTO 0);
 SIGNAL ball_y_pos  : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(240, 10);
 SIGNAL velocity    : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(0, 10);
-SIGNAL click_prev  : std_logic := '0';
+
 
 BEGIN
 
@@ -52,10 +52,7 @@ begin
     if (rising_edge(vert_sync)) then
         if (paused = '0') then
 
-            -- Edge detect click: only flap on the moment of press
-            click_prev <= left_click;
-
-            if (left_click = '1' and click_prev = '0') then
+            if (left_click = '1') then
                 -- FLAP: kick upward (negative = up on screen)
                 velocity <= CONV_STD_LOGIC_VECTOR(-12, 10);
             else
