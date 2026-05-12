@@ -7,8 +7,9 @@ USE  IEEE.STD_LOGIC_SIGNED.all;
 ENTITY bouncy_ball IS
 	PORT
 		( pb1, pb2, clk, vert_sync	: IN std_logic;
-          pixel_row, pixel_column	: IN std_logic_vector(9 DOWNTO 0);
-		  red, green, blue 			: OUT std_logic);		
+         	  pixel_row, pixel_column	: IN std_logic_vector(9 DOWNTO 0);
+		  red, green, blue 			: OUT std_logic;
+		  ball_y_out : out std_logic_vector(9 downto 0));	
 END bouncy_ball;
 
 architecture behavior of bouncy_ball is
@@ -35,6 +36,7 @@ ball_on <= '1' when ( ('0' & ball_x_pos <= '0' & pixel_column + size) and ('0' &
 Red <=  pb1;
 Green <= (not pb2) and (not ball_on);
 Blue <=  not ball_on;
+ball_y_out <= ball_y_pos;
 
 
 Move_Ball: process (vert_sync)  	
