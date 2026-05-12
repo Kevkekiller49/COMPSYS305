@@ -94,6 +94,7 @@ begin
 
     -- Mirror switches to LEDs for demo
     LEDR <= SW;
+	LEDR(8) <= left_click;
 
     -- Turn off unused seven segment displays
     HEX3 <= (others => '1');
