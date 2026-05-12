@@ -21,10 +21,10 @@ architecture behavior of bouncy_ball is
 
 SIGNAL ball_on     : std_logic;
 SIGNAL size        : std_logic_vector(9 DOWNTO 0);
-SIGNAL ball_y_pos  : std_logic_vector(9 DOWNTO 0);
-SIGNAL ball_x_pos  : std_logic_vector(10 DOWNTO 0);
-SIGNAL velocity    : std_logic_vector(9 DOWNTO 0);
-SIGNAL click_prev  : std_logic;
+SIGNAL ball_x_pos  : std_logic_vector(9 DOWNTO 0);
+SIGNAL ball_y_pos  : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(240, 10);
+SIGNAL velocity    : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(0, 10);
+SIGNAL click_prev  : std_logic := '0';
 
 BEGIN
 
