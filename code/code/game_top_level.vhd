@@ -71,9 +71,15 @@ begin
     VGA_G <= (others => green_out_internal);
     VGA_B <= (others => blue_out_internal);
     VGA_VS <= vert_sync_internal;
+<<<<<<< HEAD
     HEX0 <= (others => '1');
     HEX1 <= (others => '1');
     HEX2 <= (others => '1');
+=======
+
+    -- Drive all seven segment displays off (active low, so '1' = segment off).
+    -- These will be replaced by the seven segment controller component later.
+>>>>>>> 20621cbf1abd6c2675637aff456203af9681b04d
     HEX3 <= (others => '1');
     HEX4 <= (others => '1');
     HEX5 <= (others => '1');
