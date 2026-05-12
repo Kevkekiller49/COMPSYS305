@@ -20,11 +20,11 @@ END bouncy_ball;
 architecture behavior of bouncy_ball is
 
 SIGNAL ball_on     : std_logic;
-SIGNAL size        : std_logic_vector(9 DOWNTO 0);
-SIGNAL ball_x_pos  : std_logic_vector(9 DOWNTO 0);
-SIGNAL ball_y_pos  : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(240, 10);
-SIGNAL velocity    : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(0, 10);
-
+SIGNAL ball_y_pos : unsigned(9 DOWNTO 0) := to_unsigned(240, 10);
+SIGNAL ball_x_pos : unsigned(9 DOWNTO 0) := to_unsigned(200, 10);
+SIGNAL size       : unsigned(9 DOWNTO 0) := to_unsigned(8,   10);
+SIGNAL velocity   : signed(9 DOWNTO 0)   := to_signed(0,     10);
+SIGNAL click_prev : std_logic := '0';
 
 BEGIN
 
@@ -44,35 +44,38 @@ Red   <= pb1;
 Green <= (not pb2) and (not ball_on);
 Blue  <= not ball_on;
 
-ball_y_out <= ball_y_pos;
+ball_y_out <= std_logic_vector(ball_y_pos);
 
 -- Flappy Bird physics
 Move_Ball: process(vert_sync)
+	variable new_pos : signed(10 DOWNTO 0);
 begin
     if (rising_edge(vert_sync)) then
         if (paused = '0') then
+		click_prev <= left_click;
+            	if (left_click = '1' AND click_prev = '0') then
+                	velocity <= to_signed(-10, 10);
+            	else
+                	if velocity < to_signed(12, 10) then
+				velocity <= velocity + to_signed(1, 10);
+            		end if;
+		end if;
 
-            if (left_click = '1') then
-                -- FLAP: kick upward (negative = up on screen)
-                velocity <= CONV_STD_LOGIC_VECTOR(-12, 10);
-            else
-                -- GRAVITY: accelerate downward every frame
-                velocity <= velocity + CONV_STD_LOGIC_VECTOR(1, 10);
-            end if;
+		new_pos := resize(signed(ball_y_pos), 11) + resize(velocity, 11);
 
-            -- Boundary checks then apply velocity
-            if ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(471, 11)) then
-                -- Hit ground
-                ball_y_pos <= CONV_STD_LOGIC_VECTOR(471, 10);
-                velocity   <= CONV_STD_LOGIC_VECTOR(0, 10);
-            elsif (ball_y_pos <= size) then
-                -- Hit ceiling
-                ball_y_pos <= size;
-                velocity   <= CONV_STD_LOGIC_VECTOR(0, 10);
-            else
-                -- Normal movement
-                ball_y_pos <= ball_y_pos + velocity;
-            end if;
+            	-- Boundary checks
+            	if new_pos >= to_signed(471, 11) then
+                	-- Hit ground: stop at bottom
+                	ball_y_pos <= to_unsigned(471, 10);
+                	velocity   <= to_signed(0, 10);
+            	elsif new_pos <= to_signed(8, 11) then
+                	-- Hit ceiling: stop at top
+                	ball_y_pos <= to_unsigned(8, 10);
+                	velocity   <= to_signed(0, 10);
+            	else
+                	-- Normal: apply velocity
+                	ball_y_pos <= unsigned(new_pos(9 downto 0));
+            	end if;
 
         end if; -- paused
     end if; -- rising_edge
