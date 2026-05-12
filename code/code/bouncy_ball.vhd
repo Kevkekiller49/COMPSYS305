@@ -43,38 +43,49 @@ BEGIN
     ball_y_out <= std_logic_vector(ball_y_pos);
 
     -- Flappy Bird physics
-    Move_Ball: process(vert_sync)
-        variable new_pos : signed(11 DOWNTO 0); -- Increased bit width for safe math
-    begin
-        if (rising_edge(vert_sync)) then
-            if (paused = '0') then
-                click_prev <= left_click;
-                
-                -- Jump Logic
-                if (left_click = '1' AND click_prev = '0') then
-                    velocity <= to_signed(-10, 10); -- Instant upward burst
-                else
-                    -- Gravity with Terminal Velocity cap
-                    if velocity < to_signed(12, 10) then
-                        velocity <= velocity + to_signed(1, 10);
-                    end if;
+Move_Ball: process(vert_sync)
+    variable new_pos       : signed(11 DOWNTO 0);
+    variable next_velocity : signed(9 DOWNTO 0);
+begin
+    if rising_edge(vert_sync) then
+
+        if paused = '0' then
+
+            next_velocity := velocity;
+
+            -- Mouse click = flap upward
+            -- This checks if the mouse is held down, instead of trying to catch one tiny edge
+            if left_click = '1' then
+                next_velocity := to_signed(-10, 10);
+
+            -- Gravity
+            else
+                if next_velocity < to_signed(12, 10) then
+                    next_velocity := next_velocity + to_signed(1, 10);
                 end if;
+            end if;
 
-                -- Calculate next position (using 12-bit signed to prevent overflow)
-                new_pos := signed('0' & ball_y_pos) + resize(velocity, 12);
+            -- Apply movement immediately using next_velocity
+            new_pos := resize(signed('0' & std_logic_vector(ball_y_pos)), 12)
+                       + resize(next_velocity, 12);
 
-                -- Boundary checks
-                if new_pos >= 471 then
-                    ball_y_pos <= to_unsigned(471, 10);
-                    velocity   <= to_signed(0, 10);
-                elsif new_pos <= 8 then
-                    ball_y_pos <= to_unsigned(8, 10);
-                    velocity   <= to_signed(0, 10);
-                else
-                    ball_y_pos <= unsigned(new_pos(9 downto 0));
-                end if;
-            end if; -- paused
-        end if; -- rising_edge
-    end process Move_Ball;
+            -- Ground
+            if new_pos >= to_signed(471, 12) then
+                ball_y_pos <= to_unsigned(471, 10);
+                velocity   <= to_signed(0, 10);
 
-END behavior;
+            -- Ceiling
+            elsif new_pos <= to_signed(8, 12) then
+                ball_y_pos <= to_unsigned(8, 10);
+                velocity   <= to_signed(0, 10);
+
+            -- Normal movement
+            else
+                ball_y_pos <= unsigned(new_pos(9 downto 0));
+                velocity   <= next_velocity;
+            end if;
+
+        end if;
+
+    end if;
+end process Move_Ball;

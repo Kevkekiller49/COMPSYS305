@@ -93,7 +93,7 @@ begin
     VGA_VS <= vert_sync_internal;
 
     -- Mirror switches to LEDs for demo
-    LEDR(7 downto 0) <= SW(7 downto 0);
+    LEDR(7 downto 0) <= ball_y_pos_display(7 downto 0);
 	LEDR(9) <= SW(9);
 	LEDR(8) <= left_click;
 
