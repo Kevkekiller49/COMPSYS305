@@ -29,7 +29,7 @@ SIGNAL click_prev  : std_logic := '0';
 BEGIN
 
 size      <= CONV_STD_LOGIC_VECTOR(8, 10);
-ball_x_pos <= CONV_STD_LOGIC_VECTOR(200, 11);
+ball_x_pos <= CONV_STD_LOGIC_VECTOR(200, 10);
 
 -- Draw ball when current pixel is inside the ball square
 ball_on <= '1' when (
@@ -64,7 +64,7 @@ begin
             end if;
 
             -- Boundary checks then apply velocity
-            if ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(471, 10)) then
+            if ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(471, 11)) then
                 -- Hit ground
                 ball_y_pos <= CONV_STD_LOGIC_VECTOR(471, 10);
                 velocity   <= CONV_STD_LOGIC_VECTOR(0, 10);
