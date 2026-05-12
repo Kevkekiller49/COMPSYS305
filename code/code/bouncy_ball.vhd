@@ -1,7 +1,6 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.all;
-USE IEEE.STD_LOGIC_ARITH.all;
-USE IEEE.STD_LOGIC_SIGNED.all;
+USE IEEE.NUMERIC_STD.all;
 
 ENTITY bouncy_ball IS
     PORT(
@@ -28,16 +27,13 @@ SIGNAL click_prev : std_logic := '0';
 
 BEGIN
 
-size      <= CONV_STD_LOGIC_VECTOR(8, 10);
-ball_x_pos <= CONV_STD_LOGIC_VECTOR(200, 10);
-
 -- Draw ball when current pixel is inside the ball square
-ball_on <= '1' when (
-    ('0' & ball_x_pos <= '0' & pixel_column + size) and
-    ('0' & pixel_column <= '0' & ball_x_pos + size) and
-    ('0' & ball_y_pos <= pixel_row + size) and
-    ('0' & pixel_row <= ball_y_pos + size))
-    else '0';
+    ball_on <= '1' WHEN (
+        unsigned(pixel_column) >= ball_x_pos - size AND
+        unsigned(pixel_column) <= ball_x_pos + size AND
+        unsigned(pixel_row)    >= ball_y_pos - size AND
+        unsigned(pixel_row)    <= ball_y_pos + size
+    ) ELSE '0';
 
 -- Colours
 Red   <= pb1;
