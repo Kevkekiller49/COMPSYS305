@@ -93,10 +93,8 @@ begin
     VGA_VS <= vert_sync_internal;
 
     -- Mirror switches to LEDs for demo
-    LEDR(7 downto 0) <= ball_y_pos_display(7 downto 0);
-	LEDR(9) <= SW(9);
-	LEDR(8) <= left_click;
-
+    LEDR(9 downto 0) <= ball_y_pos_display(9 downto 0);
+	
     -- Turn off unused seven segment displays
     HEX3 <= (others => '1');
     HEX4 <= (others => '1');
