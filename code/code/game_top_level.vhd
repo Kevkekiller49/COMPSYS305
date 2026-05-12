@@ -68,6 +68,17 @@ architecture wiring of game_top_level is
             SevenSeg_out : out std_logic_vector(6 downto 0)
         );
     end component;
+	
+	signal text_on : std_logic;
+
+	component text_display is
+		port (
+			clk          : in  std_logic;
+			pixel_row    : in  std_logic_vector(9 downto 0);
+			pixel_col    : in  std_logic_vector(9 downto 0);
+			text_on      : out std_logic
+		);
+	end component;
 
 begin
 
@@ -83,11 +94,6 @@ begin
     internal_button_0 <= not KEY(0);
     internal_button_1 <= not KEY(1);
     internal_button_2 <= not KEY(2);
-
-    -- Expand 1-bit colour to 4-bit VGA outputs
-    VGA_R <= (others => red_out_internal);
-    VGA_G <= (others => green_out_internal);
-    VGA_B <= (others => blue_out_internal);
 
     -- Drive VGA_VS from internal signal
     VGA_VS <= vert_sync_internal;
@@ -109,6 +115,21 @@ begin
         tens     <= std_logic_vector(to_unsigned((tempval mod 100) / 10, 4));
         ones     <= std_logic_vector(to_unsigned(tempval mod 10, 4));
     end process;
+
+	process(text_on, red_out_internal, green_out_internal, blue_out_internal)
+	begin
+		if (text_on = '1') then
+			-- Layer 1 (Top): White Text
+			VGA_R <= "1111"; 
+			VGA_G <= "1111"; 
+			VGA_B <= "1111";
+		else
+			-- Layer 2: Original Game (Ball or Cyan Background)
+			VGA_R <= (others => red_out_internal);
+			VGA_G <= (others => green_out_internal);
+			VGA_B <= (others => blue_out_internal);
+		end if;
+	end process;
 
     -- VGA Sync controller
     VGA_DRIVER : component VGA_SYNC
@@ -174,6 +195,14 @@ begin
     port map(
         BCD_digit    => hundreds,
         SevenSeg_out => HEX2
+    );
+	
+	TEXT_UNIT : component text_display
+    port map(
+        clk       => clk_25,
+        pixel_row => pixel_row,
+        pixel_col => pixel_column,
+        text_on   => text_on
     );
 
 end architecture wiring;
