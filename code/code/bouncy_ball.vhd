@@ -42,12 +42,14 @@ ball_y_out <= ball_y_pos;
 Move_Ball: process (vert_sync)  	
 begin
 	-- Move ball once every vertical sync
-	if (rising_edge(vert_sync)) then			
-		-- Bounce off top or bottom of the screen
-		if ( ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(479,10) - size) ) then
-			ball_y_motion <= - CONV_STD_LOGIC_VECTOR(2,10);
-		elsif (ball_y_pos <= size) then 
-			ball_y_motion <= CONV_STD_LOGIC_VECTOR(2,10);
+	if (rising_edge(vert_sync)) then
+		if (paused = '0') then			
+			-- Bounce off top or bottom of the screen
+			if ( ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(479,10) - size) ) then
+				ball_y_motion <= - CONV_STD_LOGIC_VECTOR(2,10);
+			elsif (ball_y_pos <= size) then 
+				ball_y_motion <= CONV_STD_LOGIC_VECTOR(2,10);
+			end if;
 		end if;
 		-- Compute next ball Y position
 		ball_y_pos <= ball_y_pos + ball_y_motion;
