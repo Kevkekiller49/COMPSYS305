@@ -24,7 +24,7 @@ SIGNAL size        : std_logic_vector(9 DOWNTO 0);
 SIGNAL ball_x_pos  : std_logic_vector(9 DOWNTO 0);
 SIGNAL ball_y_pos  : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(240, 10);
 SIGNAL velocity    : std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(0, 10);
-
+SIGNAL click_prev : std_logic := '0';
 
 BEGIN
 
@@ -47,35 +47,32 @@ Blue  <= not ball_on;
 ball_y_out <= ball_y_pos;
 
 -- Flappy Bird physics
-Move_Ball: process(vert_sync)
+Move_Ball: process(vert_sync) 
 begin
-    if (rising_edge(vert_sync)) then
-        if (paused = '0') then
+    if rising_edge(vert_sync) then
+        if (paused = '1') then
+            -- Do nothing, effectively freezing the ball
+        else
+            -- 1. Edge Detection
+            click_prev <= left_click;
 
-            if (left_click = '1') then
-                -- FLAP: kick upward (negative = up on screen)
-                velocity <= CONV_STD_LOGIC_VECTOR(-12, 10);
+            -- 2. Jump Logic
+            -- If left click is pressed and was NOT pressed last cycle
+            if (left_click = '1' and click_prev = '0') then
+                velocity <= CONV_STD_LOGIC_VECTOR(-12, 10); 
             else
-                -- GRAVITY: accelerate downward every frame
-                velocity <= velocity + CONV_STD_LOGIC_VECTOR(1, 10);
+                -- 3. Gravity
+                velocity <= velocity + 1; 
             end if;
 
-            -- Boundary checks then apply velocity
-            if ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(471, 11)) then
-                -- Hit ground
-                ball_y_pos <= CONV_STD_LOGIC_VECTOR(471, 10);
-                velocity   <= CONV_STD_LOGIC_VECTOR(0, 10);
-            elsif (ball_y_pos <= size) then
-                -- Hit ceiling
-                ball_y_pos <= size;
-                velocity   <= CONV_STD_LOGIC_VECTOR(0, 10);
+            -- 4. Position Update & Floor Collision
+            -- 440 is the bottom of the screen (minus ball size)
+            if (ball_y_pos >= 440 and velocity > 0) then
+                ball_y_pos <= CONV_STD_LOGIC_VECTOR(440, 10);
+                velocity <= (others => '0'); 
             else
-                -- Normal movement
                 ball_y_pos <= ball_y_pos + velocity;
             end if;
-
-        end if; -- paused
-    end if; -- rising_edge
+        end if;
+    end if;
 end process Move_Ball;
-
-END behavior;
