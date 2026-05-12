@@ -16,7 +16,7 @@ entity game_top_level is
 end entity game_top_level;
 
 architecture wiring of game_top_level is
-<<<<<<< HEAD
+
     signal clk_25 : std_logic;
     signal pixel_row, pixel_column : std_logic_vector(9 downto 0);
     signal mouse_x, mouse_y : std_logic_vector(9 downto 0);
@@ -71,15 +71,14 @@ begin
     VGA_G <= (others => green_out_internal);
     VGA_B <= (others => blue_out_internal);
     VGA_VS <= vert_sync_internal;
-<<<<<<< HEAD
     HEX0 <= (others => '1');
     HEX1 <= (others => '1');
     HEX2 <= (others => '1');
-=======
+
 
     -- Drive all seven segment displays off (active low, so '1' = segment off).
     -- These will be replaced by the seven segment controller component later.
->>>>>>> 20621cbf1abd6c2675637aff456203af9681b04d
+
     HEX3 <= (others => '1');
     HEX4 <= (others => '1');
     HEX5 <= (others => '1');
@@ -125,7 +124,7 @@ begin
         blue        => blue_pixel
     );
 
-=======
+
 	signal clk_25 : std_logic;
 	signal pixel_row, pixel_column, mouse_x, mouse_y : std_logic_vector(9 downto 0);
 	signal red_pixel, green_pixel, blue_pixel, left_click, right_click, internal_button_0, internal_button_1, internal_button_2, red_out_internal, green_out_internal, blue_out_internal, vert_sync_internal : std_logic;
@@ -256,5 +255,5 @@ begin
 			);
 			
 		LEDR(9 downto 0) <= SW(9 downto 0); -- Lights up the LED above every flipped switch
->>>>>>> 3aff10ecfdbc33e451e59a9941b35475d6d0c0de
+
 end architecture wiring;
