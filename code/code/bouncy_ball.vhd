@@ -89,3 +89,4 @@ begin
 
     end if;
 end process Move_Ball;
+end behavior;
