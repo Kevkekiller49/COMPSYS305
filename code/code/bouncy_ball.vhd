@@ -61,7 +61,7 @@ BEGIN
                 end if;
 
                 -- Calculate next position (using 12-bit signed to prevent overflow)
-                new_pos := signed('0' & ball_y_pos) + resize(velocity, 11);
+                new_pos := signed('0' & ball_y_pos) + resize(velocity, 12);
 
                 -- Boundary checks
                 if new_pos >= 471 then
