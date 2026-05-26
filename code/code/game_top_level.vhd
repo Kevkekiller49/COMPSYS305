@@ -25,6 +25,7 @@ architecture wiring of game_top_level is
     -- VGA output signals from renderer
     signal red_out_internal, green_out_internal, blue_out_internal : std_logic;
     signal renderer_r, renderer_g, renderer_b : std_logic;
+	
 
     -- Mouse inputs
     signal mouse_x, mouse_y        : std_logic_vector(9 downto 0);
@@ -36,6 +37,8 @@ architecture wiring of game_top_level is
     signal score, lfsr_value                      : std_logic_vector(9 downto 0);
     signal display_mode, level, lives             : std_logic_vector(1 downto 0);
     signal game_active, training_mode, lives_zero : std_logic;
+	signal powerup_x, powerup_y : std_logic_vector(9 downto 0);
+	signal powerup_type, shield_active : std_logic;
 
     -- Seven segment display digits
     signal score_tens, score_ones, level_disp, lives_disp : std_logic_vector(3 downto 0);
@@ -105,7 +108,9 @@ architecture wiring of game_top_level is
             lives_zero          : out std_logic;
             level, lives        : out std_logic_vector(1 downto 0);
             child_y, arm_x1, arm_x2, arm_x3,
-            arm_gap1, arm_gap2, arm_gap3, score : out std_logic_vector(9 downto 0)
+            arm_gap1, arm_gap2, arm_gap3, score : out std_logic_vector(9 downto 0);
+			shield_active, powerup_type : out std_logic;
+			powerup_x, powerup_y : out std_logic_vector(9 downto 0)
         );
     end component;
 
@@ -115,6 +120,8 @@ architecture wiring of game_top_level is
             child_y                      : in  std_logic_vector(9 downto 0);
             arm_x1, arm_x2, arm_x3      : in  std_logic_vector(9 downto 0);
             arm_gap1, arm_gap2, arm_gap3 : in  std_logic_vector(9 downto 0);
+			powerup_x, powerup_y : in std_logic_vector(9 downto 0);
+			powerup_type, shield_active : in std_logic;
             clk, reset                   : in  std_logic;
             red, green, blue             : out std_logic
         );
@@ -243,7 +250,11 @@ begin
         arm_gap1      => arm_gap1,
         arm_gap2      => arm_gap2,
         arm_gap3      => arm_gap3,
-        score         => score
+        score         => score,
+		shield_active => shield_active,
+		powerup_type  => powerup_type,
+		powerup_x     => powerup_x,
+		powerup_y     => powerup_y
     );
 
     -- Renderer: draws background, pipes, bird sprite
@@ -262,7 +273,11 @@ begin
         arm_gap3     => arm_gap3,
         red          => renderer_r,
         green        => renderer_g,
-        blue         => renderer_b
+        blue         => renderer_b,
+		powerup_x     => powerup_x,
+		powerup_y     => powerup_y,
+		powerup_type  => powerup_type,
+		shield_active => shield_active
     );
 
     -- Text display: overlays menu/HUD/game-over text

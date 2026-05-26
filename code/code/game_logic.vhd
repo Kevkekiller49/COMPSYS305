@@ -5,15 +5,15 @@ use IEEE.numeric_std.all;
 entity game_logic is
 	port (clk, reset, game_active, training_mode, left_click : in std_logic;
 		lfsr_value, mouse_y : in std_logic_vector(9 downto 0);
-		lives_zero : out std_logic;
+		lives_zero, shield_active, powerup_type : out std_logic;
 		level, lives : out std_logic_vector(1 downto 0);
-		child_y, arm_x1, arm_x2, arm_x3, arm_gap1, arm_gap2, arm_gap3, score : out std_logic_vector(9 downto 0));
+		child_y, arm_x1, arm_x2, arm_x3, arm_gap1, arm_gap2, arm_gap3, score, powerup_x, powerup_y : out std_logic_vector(9 downto 0));
 end entity game_logic;
 
 architecture logic of game_logic is
-	signal update_tick, collision, lives_zero_internal: std_logic;
+	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal : std_logic;
 	signal level_internal, lives_internal : unsigned(1 downto 0);
-	signal child_y_internal, arm_x1_internal, arm_x2_internal, arm_x3_internal, arm_gap1_internal, arm_gap2_internal, arm_gap3_internal, score_internal : unsigned(9 downto 0);
+	signal child_y_internal, arm_x1_internal, arm_x2_internal, arm_x3_internal, arm_gap1_internal, arm_gap2_internal, arm_gap3_internal, score_internal, powerup_x_internal, powerup_y_internal : unsigned(9 downto 0);
 	signal velocity : signed(9 downto 0);
 	signal update_counter : unsigned(19 downto 0);
 	signal cooldown : unsigned(21 downto 0);
@@ -166,22 +166,25 @@ architecture logic of game_logic is
 					if game_active = '1' then
 						if cooldown > 0 then
 							cooldown <= cooldown - 1;
-					
 						elsif collision = '1' then
-							arm_x1_internal <= to_unsigned(200, 10);
-							arm_x2_internal <= to_unsigned(400, 10);
-							arm_x3_internal <= to_unsigned(600, 10);
-							arm_gap1_internal <= to_unsigned(240, 10);
-							arm_gap2_internal <= to_unsigned(240, 10);
-							arm_gap3_internal <= to_unsigned(240, 10);
-							cooldown <= to_unsigned(3000000, 22);
-							child_y_internal <= to_unsigned(240, 10); 
-							velocity <= to_signed(0, 10);
-							if lives_internal = 1 then
-								lives_zero_internal <= '1';
+							if shield_internal = '1' then
+								shield_internal <= '0';  -- absorb hit, no life lost
+								cooldown <= to_unsigned(3000000, 22);
+							else 
+								arm_x1_internal <= to_unsigned(200, 10);
+								arm_x2_internal <= to_unsigned(400, 10);
+								arm_x3_internal <= to_unsigned(600, 10);
+								arm_gap1_internal <= to_unsigned(240, 10);
+								arm_gap2_internal <= to_unsigned(240, 10);
+								arm_gap3_internal <= to_unsigned(240, 10);
+								cooldown <= to_unsigned(3000000, 22);
+								child_y_internal <= to_unsigned(240, 10); 
+								velocity <= to_signed(0, 10);
+								if lives_internal = 1 then
+									lives_zero_internal <= '1';
+								end if;
+								lives_internal <= lives_internal - 1;
 							end if;
-							lives_internal <= lives_internal - 1;
-							
 						end if;
 					end if;
 				end if;
@@ -220,6 +223,50 @@ architecture logic of game_logic is
 				end if;
 			end if;
 		end process Score_Tracker;
+		
+		Power_Up_Move : process(clk)
+		begin
+			if rising_edge(clk) then
+				if reset = '1' then
+					powerup_x_internal   <= to_unsigned(640, 10);
+					powerup_y_internal   <= to_unsigned(240, 10);
+					powerup_type_internal <= '0';
+					shield_internal      <= '0';
+					
+				else
+					if game_active = '1' and update_tick = '1' then
+						if powerup_x_internal = 0 then
+							powerup_x_internal <= to_unsigned(640, 10);
+							powerup_y_internal <= to_unsigned(100, 10) + unsigned("00" & lfsr_value(7 downto 0));
+							powerup_type_internal <= not powerup_type_internal;
+						else
+							powerup_x_internal <= powerup_x_internal - 1;
+						end if;
+					end if;
+					
+					-- pickup collision check here (every clock, not just on tick)
+					if game_active = '1' then
+						if child_y_internal >= powerup_y_internal - 8 and
+						   child_y_internal <= powerup_y_internal + 8 and
+						   to_unsigned(100, 10) >= powerup_x_internal - 8 and
+						   to_unsigned(100, 10) <= powerup_x_internal then
+							-- apply effect
+							if powerup_type_internal = '0' then
+								shield_internal <= '1';
+							else
+								if lives_internal < to_unsigned(3, 2) then
+									lives_internal <= lives_internal + 1;
+								end if;
+							end if;
+							-- respawn off screen
+							powerup_x_internal <= to_unsigned(640, 10);
+							powerup_y_internal <= to_unsigned(100, 10) + unsigned("00" & lfsr_value(7 downto 0));
+							powerup_type_internal <= not powerup_type_internal;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process Power_Up_Move;
 	-- Output assignments
     lives_zero  <= lives_zero_internal; 
     level       <= std_logic_vector(level_internal);
@@ -232,6 +279,10 @@ architecture logic of game_logic is
     arm_gap2    <= std_logic_vector(arm_gap2_internal);
     arm_gap3    <= std_logic_vector(arm_gap3_internal);
     score       <= std_logic_vector(score_internal);
+	powerup_x    <= std_logic_vector(powerup_x_internal);
+	powerup_y    <= std_logic_vector(powerup_y_internal);
+	powerup_type <= powerup_type_internal;
+	shield_active <= shield_internal;
 
 end architecture logic;
 			
