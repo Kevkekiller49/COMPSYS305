@@ -36,7 +36,7 @@ use IEEE.numeric_std.all;
 
 entity game_fsm is
     port(Clk, reset, start_button, pause_button, mode_switch, lives_zero : in std_logic;
-        game_active : out std_logic;
+        game_active, training_mode : out std_logic;
         display_mode : out std_logic_vector (1 downto 0));
 end entity game_fsm;
 
@@ -171,6 +171,7 @@ begin
                 display_mode <= "10";
 
         end case;
+		
     end process;
-
+	training_mode <= '1' when (current_state = TRAINING or current_state = PAUSED_TRAINING) else '0';
 end architecture behaviour;
