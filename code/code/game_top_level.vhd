@@ -263,7 +263,7 @@ begin
     );
 
     -- Renderer: draws background, pipes, bird sprite
-    RENDERER : component renderer
+    RENDER_UNIT : component renderer
     port map(
         clk      => clk_25,
         reset    => reset,

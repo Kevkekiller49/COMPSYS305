@@ -11,7 +11,7 @@ entity game_logic is
 end entity game_logic;
 
 architecture logic of game_logic is
-	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal, collision_hit	 : std_logic;
+	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal, collision_hit,	powerup_collected : std_logic;
 	signal level_internal, lives_internal : unsigned(1 downto 0);
 	signal sprite_y_internal, pipe_x1_internal, pipe_x2_internal, pipe_x3_internal, pipe_gap1_internal, pipe_gap2_internal, pipe_gap3_internal, score_internal, powerup_x_internal, powerup_y_internal : unsigned(9 downto 0);
 	signal velocity : signed(9 downto 0);
@@ -144,9 +144,11 @@ architecture logic of game_logic is
 					cooldown <= (others => '0');
 					lives_zero_internal <= '0';
 					collision_hit <= '0';
+					powerup_collected <= '0';
 					shield_internal <= '0';
 				else
 					collision_hit <= '0';
+					powerup_collected <= '0';
 					if game_active = '1' then
 						if cooldown > 0 then
 							cooldown <= cooldown - 1;
@@ -176,9 +178,7 @@ architecture logic of game_logic is
 									lives_internal <= lives_internal + 1;
 								end if;
 							end if;
-							powerup_x_internal <= to_unsigned(640, 10);
-							powerup_y_internal <= to_unsigned(100, 10) + unsigned("00" & lfsr_value(7 downto 0));
-							powerup_type_internal <= not powerup_type_internal;
+							powerup_collected <= '1';
 						end if;
 					end if;
 				end if;
@@ -225,6 +225,10 @@ architecture logic of game_logic is
 					powerup_x_internal <= to_unsigned(640, 10);
 					powerup_y_internal <= to_unsigned(240, 10);
 					powerup_type_internal <= '0';
+				elsif powerup_collected = '1' then
+					powerup_x_internal <= to_unsigned(640, 10);
+					powerup_y_internal <= to_unsigned(100, 10) + unsigned("00" & lfsr_value(7 downto 0));
+					powerup_type_internal <= not powerup_type_internal;
 				elsif game_active = '1' and update_tick = '1' then
 					if powerup_x_internal = 0 then
 						powerup_x_internal <= to_unsigned(640, 10);
