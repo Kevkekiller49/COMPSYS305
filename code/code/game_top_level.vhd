@@ -50,6 +50,9 @@ architecture wiring of game_top_level is
     signal reset            : std_logic;
     signal internal_button_1 : std_logic;
     signal internal_button_2 : std_logic;
+	
+	signal locked : std_logic;
+	signal raw_reset : std_logic;
 
     -- Component declarations
     component VGA_SYNC is
@@ -133,19 +136,21 @@ architecture wiring of game_top_level is
             lfsr_value  : out std_logic_vector(9 downto 0)
         );
     end component;
+	
+	component pll is
+		port(
+			refclk   : in  std_logic;
+			rst      : in  std_logic;
+			outclk_0 : out std_logic;
+			locked   : out std_logic
+		);
+	end component;
 
 begin
-
-    -- 50MHz -> 25MHz clock divider for VGA
-    process(CLOCK_50)
-    begin
-        if rising_edge(CLOCK_50) then
-            clk_25 <= not clk_25;
-        end if;
-    end process;
-
     -- Active-high reset from active-low KEY(0)
-    reset <= not KEY(0);
+    raw_reset <= not KEY(0);              -- plain, for PLL
+	reset     <= (not KEY(0)) and locked; -- gated, for everything else
+	
 
     -- Active-high buttons from active-low keys
     internal_button_1 <= not KEY(1);  -- start
@@ -300,6 +305,14 @@ begin
         reset      => reset,
         lfsr_value => lfsr_value
     );
+	
+	PLL_UNIT : component pll
+		port map(
+			refclk   => CLOCK_50,
+			rst      => raw_reset,
+			outclk_0 => clk_25,
+			locked   => locked
+		);
 
     -- Seven segment displays
     SEG_ONES : component BCD_to_SevenSeg
