@@ -1,0 +1,387 @@
+m255
+K3
+13
+cModel Technology
+Z0 dC:\Disan Personal\UoA\Y3 S1\COMPSYS 305\miniproject\COMPSYS305\code\code
+Echar_rom
+Z1 w1586098572
+Z2 DPx4 ieee 18 std_logic_unsigned 0 22 RYmj;=TK`k=k>D@Cz`zoB3
+Z3 DPx4 ieee 15 std_logic_arith 0 22 4`Y?g_lkdn;7UL9IiJck01
+Z4 DPx3 std 6 textio 0 22 5>J:;AW>W0[[dW0I6EN1Q0
+Z5 DPx4 ieee 14 std_logic_1164 0 22 5=aWaoGZSMWIcH0i^f`XF1
+Z6 dC:\Disan Personal\UoA\Y3 S1\COMPSYS 305\miniproject\COMPSYS305\code\code
+Z7 8char_rom.vhd
+Z8 Fchar_rom.vhd
+l0
+L9
+V``[VGH:Ia>339EnKN`Oi:0
+Z9 OV;C;10.1d;51
+32
+Z10 !s108 1779848749.148000
+Z11 !s90 -reportprogress|300|char_rom.vhd|
+Z12 !s107 char_rom.vhd|
+o-O0
+Z13 tExplicit 1
+!s100 8BTe6g2GzRlieT`CE33Ub1
+!i10b 1
+Asyn
+R2
+R3
+R4
+R5
+Z14 DEx4 work 8 char_rom 0 22 ``[VGH:Ia>339EnKN`Oi:0
+l49
+L20
+V3=TSk@ajo_2o]QIoJz^W@1
+R9
+32
+R10
+R11
+R12
+o-O0
+R13
+!s100 T?kBoHZao@A_Sd@:b0D5d2
+!i10b 1
+Egame_fsm
+Z15 w1779800346
+Z16 DPx4 ieee 11 numeric_std 0 22 O3PF8EB`?j9=z7KT`fn941
+R4
+R5
+R6
+Z17 8game_fsm.vhd
+Z18 Fgame_fsm.vhd
+l0
+L37
+Vl=MN<FIX9I8RniTE599@Y0
+R9
+32
+Z19 !s108 1779848749.257000
+Z20 !s90 -reportprogress|300|game_fsm.vhd|
+Z21 !s107 game_fsm.vhd|
+o-O0
+R13
+!s100 oznK`D:TBNhLZ9i;Nf0a^1
+!i10b 1
+Abehaviour
+R16
+R4
+R5
+DEx4 work 8 game_fsm 0 22 l=MN<FIX9I8RniTE599@Y0
+l54
+L43
+VPQ9<[iNPAkDR]D6KA1c3S0
+R9
+32
+R19
+R20
+R21
+o-O0
+R13
+!s100 WC8UBNSaTF8dQE_HV<D@d3
+!i10b 1
+Egame_logic
+R15
+R16
+R4
+R5
+R6
+Z22 8game_logic.vhd
+Z23 Fgame_logic.vhd
+l0
+L5
+V7Rb]gz3=Qoh9azgBN[_YB0
+R9
+32
+Z24 !s108 1779848749.354000
+Z25 !s90 -reportprogress|300|game_logic.vhd|
+Z26 !s107 game_logic.vhd|
+o-O0
+R13
+!s100 ZigU;Y]e4B=I0K3DY;n`S0
+!i10b 1
+Alogic
+R16
+R4
+R5
+DEx4 work 10 game_logic 0 22 7Rb]gz3=Qoh9azgBN[_YB0
+l21
+L13
+VN5N`>87nU2LH5VACGQkZW3
+R9
+32
+R24
+R25
+R26
+o-O0
+R13
+!s100 Hf@cL>_C703`PFZ:RFSL92
+!i10b 1
+Egame_top_level
+w1779847154
+R16
+R4
+R5
+R6
+8game_top_level.vhd
+Fgame_top_level.vhd
+l0
+L5
+V8PKgn6>1c<jWzK_oi:EWF2
+!s100 V5gz7<P7YDCiDfOZbl_8B2
+R9
+32
+!i10b 1
+!s108 1779848750.159000
+!s90 -reportprogress|300|game_top_level.vhd|
+!s107 game_top_level.vhd|
+o-O0
+R13
+Elfsr
+Z27 w1779847175
+R4
+R5
+R6
+Z28 8lfsr.vhd
+Z29 Flfsr.vhd
+l0
+L4
+Vj9lk>QX2VG4RUVONY6baS2
+R9
+32
+Z30 !s108 1779848749.450000
+Z31 !s90 -reportprogress|300|lfsr.vhd|
+Z32 !s107 lfsr.vhd|
+o-O0
+R13
+!s100 zL^Oe09k:D7YVKbo?ecEP0
+!i10b 1
+Artl
+R4
+R5
+DEx4 work 4 lfsr 0 22 j9lk>QX2VG4RUVONY6baS2
+l13
+L11
+V4fXb7>lJj=0_gReeIeBnD0
+R9
+32
+R30
+R31
+R32
+o-O0
+R13
+!s100 5jianAGLlz@lZULET8FG<1
+!i10b 1
+Emouse
+Z33 w1617181975
+R2
+R3
+R4
+R5
+R6
+Z34 8MOUSE.vhd
+Z35 FMOUSE.vhd
+l0
+L9
+Vf1`bgz5h7lT98<IezKh2a0
+R9
+32
+Z36 !s108 1779848749.859000
+Z37 !s90 -reportprogress|300|MOUSE.vhd|
+Z38 !s107 MOUSE.vhd|
+o-O0
+R13
+!s100 ]XHZZI:ABX]SP9GBRlUIc2
+!i10b 1
+Abehavior
+R2
+R3
+R4
+R5
+DEx4 work 5 mouse 0 22 f1`bgz5h7lT98<IezKh2a0
+l44
+L18
+Vebck:SRF[^YiAMALM3>3l0
+R9
+32
+R36
+R37
+R38
+o-O0
+R13
+!s100 747ZknDDV[UmC2lK^FK<I2
+!i10b 1
+Epll
+Z39 w1779537360
+R16
+R4
+R5
+R6
+Z40 8pll.vhd
+Z41 Fpll.vhd
+l0
+L11
+VXTgM?eY@<MK2OejaTg?e22
+R9
+32
+Z42 !s108 1779848750.043000
+Z43 !s90 -reportprogress|300|pll.vhd|
+Z44 !s107 pll.vhd|
+o-O0
+R13
+!s100 ?2ii[]RZ2iDfIES<=Bz[O0
+!i10b 1
+Artl
+R16
+R4
+R5
+DEx4 work 3 pll 0 22 XTgM?eY@<MK2OejaTg?e22
+l30
+L20
+VfBgoJCeL6_0j^1=`]R4dK2
+R9
+32
+R42
+R43
+R44
+o-O0
+R13
+!s100 FdHjeU_<BSYm7=XEEehG?1
+!i10b 1
+Erenderer
+R15
+Z45 DPx4 work 10 sprite_pkg 0 22 ]N]IkgTC^G3bFSZokaYmY1
+R16
+R4
+R5
+R6
+Z46 8renderer.vhd
+Z47 Frenderer.vhd
+l0
+L6
+Vc0XOf0IA83L7U?k<Sc`jP1
+R9
+32
+Z48 !s108 1779848749.544000
+Z49 !s90 -reportprogress|300|renderer.vhd|
+Z50 !s107 renderer.vhd|
+o-O0
+R13
+!s100 zc`90LlE`^S`H>1dGc2R:3
+!i10b 1
+Artl
+R45
+R16
+R4
+R5
+DEx4 work 8 renderer 0 22 c0XOf0IA83L7U?k<Sc`jP1
+l25
+L20
+V6YfI0aM]OmDjTM@dZTf@12
+R9
+32
+R48
+R49
+R50
+o-O0
+R13
+!s100 Gbo3f?HVn]O9@QU[aU9ca1
+!i10b 1
+Psprite_pkg
+R16
+R4
+R5
+w1779847720
+R6
+8sprite_rom.vhd
+Fsprite_rom.vhd
+l0
+L14
+V]N]IkgTC^G3bFSZokaYmY1
+R9
+32
+o-O0
+R13
+!s100 QVGb64I<F@P4e8L6^9URS3
+!i10b 1
+!s108 1779848749.037000
+!s90 -reportprogress|300|sprite_rom.vhd|
+!s107 sprite_rom.vhd|
+Etext_display
+R15
+R16
+R4
+R5
+R6
+Z51 8text_display.vhd
+Z52 Ftext_display.vhd
+l0
+L5
+V[;=o^JjfC[hbLEF?8JLoX3
+R9
+32
+Z53 !s108 1779848749.649000
+Z54 !s90 -reportprogress|300|text_display.vhd|
+Z55 !s107 text_display.vhd|
+o-O0
+R13
+!s100 3h;k2zlk^`z@c_;TQ[0V]3
+!i10b 1
+Abehavioral
+R2
+R3
+R14
+R16
+R4
+R5
+DEx4 work 12 text_display 0 22 [;=o^JjfC[hbLEF?8JLoX3
+l32
+L18
+Vf<46[l?EgkaLk;oh4ZG912
+R9
+32
+R53
+R54
+R55
+o-O0
+R13
+!s100 _00d<]oP[NQH2BVj@mkKc1
+!i10b 1
+Evga_sync
+Z56 w1519684517
+R2
+R3
+R4
+R5
+R6
+Z57 8VGA_SYNC.vhd
+Z58 FVGA_SYNC.vhd
+l0
+L7
+VO;ZdZL00z]3g57M:T8b5_3
+R9
+32
+Z59 !s108 1779848749.764000
+Z60 !s90 -reportprogress|300|VGA_SYNC.vhd|
+Z61 !s107 VGA_SYNC.vhd|
+o-O0
+R13
+!s100 EzPbFIbmV;hg7RF`7Uc]00
+!i10b 1
+Aa
+R2
+R3
+R4
+R5
+DEx4 work 8 vga_sync 0 22 O;ZdZL00z]3g57M:T8b5_3
+l18
+L13
+VD;jz_c?Q8;gTDQGkG@@M21
+R9
+32
+R59
+R60
+R61
+o-O0
+R13
+!s100 QXoa:boXbTi_9N8T36zV42
+!i10b 1
