@@ -236,7 +236,7 @@ begin
     );
 
     -- Game logic: bird physics, pipes, collision, scoring
-    GAME_LOGIC : component game_logic
+    LOGIC : component game_logic
     port map(
         clk           => clk_25,
         reset         => reset,
