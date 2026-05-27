@@ -7,27 +7,27 @@ entity game_logic is
 		lfsr_value, mouse_y : in std_logic_vector(9 downto 0);
 		lives_zero, shield_active, powerup_type : out std_logic;
 		level, lives : out std_logic_vector(1 downto 0);
-		child_y, arm_x1, arm_x2, arm_x3, arm_gap1, arm_gap2, arm_gap3, score, powerup_x, powerup_y : out std_logic_vector(9 downto 0));
+		sprite_y, pipe_x1, pipe_x2, pipe_x3, pipe_gap1, pipe_gap2, pipe_gap3, score, powerup_x, powerup_y : out std_logic_vector(9 downto 0));
 end entity game_logic;
 
 architecture logic of game_logic is
 	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal : std_logic;
 	signal level_internal, lives_internal : unsigned(1 downto 0);
-	signal child_y_internal, arm_x1_internal, arm_x2_internal, arm_x3_internal, arm_gap1_internal, arm_gap2_internal, arm_gap3_internal, score_internal, powerup_x_internal, powerup_y_internal : unsigned(9 downto 0);
+	signal sprite_y_internal, pipe_x1_internal, pipe_x2_internal, pipe_x3_internal, pipe_gap1_internal, pipe_gap2_internal, pipe_gap3_internal, score_internal, powerup_x_internal, powerup_y_internal : unsigned(9 downto 0);
 	signal velocity : signed(9 downto 0);
 	signal update_counter : unsigned(19 downto 0);
 	signal cooldown : unsigned(21 downto 0);
 	
 	begin
 		collision <= '1' when
-		(child_y_internal >= 471) or
-		(child_y_internal <= 8) or
-		(arm_x1_internal >= 80 and arm_x1_internal <= 120 and
-		(child_y_internal < arm_gap1_internal - 40 or child_y_internal > arm_gap1_internal + 40)) or
-		(arm_x2_internal >= 80 and arm_x2_internal <= 120 and
-		(child_y_internal < arm_gap2_internal - 40 or child_y_internal > arm_gap2_internal + 40)) or
-		(arm_x3_internal >= 80 and arm_x3_internal <= 120 and
-		(child_y_internal < arm_gap3_internal - 40 or child_y_internal > arm_gap3_internal + 40))
+		(sprite_y_internal >= 471) or
+		(sprite_y_internal <= 8) or
+		(pipe_x1_internal >= 80 and pipe_x1_internal <= 120 and
+		(sprite_y_internal < pipe_gap1_internal - 40 or sprite_y_internal > pipe_gap1_internal + 40)) or
+		(pipe_x2_internal >= 80 and pipe_x2_internal <= 120 and
+		(sprite_y_internal < pipe_gap2_internal - 40 or sprite_y_internal > pipe_gap2_internal + 40)) or
+		(pipe_x3_internal >= 80 and pipe_x3_internal <= 120 and
+		(sprite_y_internal < pipe_gap3_internal - 40 or sprite_y_internal > pipe_gap3_internal + 40))
 		else '0';
 		update_counter_process: process(clk)
 		variable threshold : unsigned(19 downto 0);
@@ -62,7 +62,7 @@ architecture logic of game_logic is
 		begin
 			if rising_edge(clk) then
 				if reset = '1' then
-					child_y_internal <= to_unsigned(240,10);
+					sprite_y_internal <= to_unsigned(240,10);
 					velocity <= to_signed(0,10);
 				end if;
 				if game_active = '1' and update_tick = '1' then
@@ -82,22 +82,22 @@ architecture logic of game_logic is
 					end if;
 
 					-- Apply movement immediately using next_velocity
-					new_pos := resize(signed('0' & std_logic_vector(child_y_internal)), 12)
+					new_pos := resize(signed('0' & std_logic_vector(sprite_y_internal)), 12)
 							   + resize(next_velocity, 12);
 
 					-- Ground
 					if new_pos >= to_signed(471, 12) then
-						child_y_internal <= to_unsigned(471, 10);
+						sprite_y_internal <= to_unsigned(471, 10);
 						velocity   <= to_signed(0, 10);
 
 					-- Ceiling
 					elsif new_pos <= to_signed(8, 12) then
-						child_y_internal <= to_unsigned(8, 10);
+						sprite_y_internal <= to_unsigned(8, 10);
 						velocity   <= to_signed(0, 10);
 
 					-- Normal movement
 					else
-						child_y_internal <= unsigned(new_pos(9 downto 0));
+						sprite_y_internal <= unsigned(new_pos(9 downto 0));
 						velocity   <= next_velocity;
 					end if;
 
@@ -106,49 +106,49 @@ architecture logic of game_logic is
 			end if;
 		end process Move_Child;
 			
-		Arm_Place: process(clk)
+		Pipe_Place: process(clk)
 		begin
 			if rising_edge(clk) then
 				if reset = '1' then
-					arm_x1_internal <= to_unsigned(200,10);
-					arm_x2_internal <= to_unsigned(400,10);
-					arm_x3_internal <= to_unsigned(600,10);
-					arm_gap1_internal <= to_unsigned(240,10);
-					arm_gap2_internal <= to_unsigned(240,10);
-					arm_gap3_internal <= to_unsigned(240,10);
+					pipe_x1_internal <= to_unsigned(200,10);
+					pipe_x2_internal <= to_unsigned(400,10);
+					pipe_x3_internal <= to_unsigned(600,10);
+					pipe_gap1_internal <= to_unsigned(240,10);
+					pipe_gap2_internal <= to_unsigned(240,10);
+					pipe_gap3_internal <= to_unsigned(240,10);
 				end if;
 				
 				if game_active = '1' and update_tick = '1' then
 
-					if arm_x1_internal = 0 then
+					if pipe_x1_internal = 0 then
 						-- recycle to right edge with new gap
-						arm_x1_internal <= to_unsigned(640,10);
-						arm_gap1_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
+						pipe_x1_internal <= to_unsigned(640,10);
+						pipe_gap1_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
 					else
 						-- move left by 1
-						arm_x1_internal <= arm_x1_internal - 1;
+						pipe_x1_internal <= pipe_x1_internal - 1;
 					end if;
 
-					if arm_x2_internal = 0 then
+					if pipe_x2_internal = 0 then
 						-- recycle to right edge with new gap
-						arm_x2_internal <= to_unsigned(640,10);
-						arm_gap2_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));					
+						pipe_x2_internal <= to_unsigned(640,10);
+						pipe_gap2_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));					
 					else
 						-- move left by 1
-						arm_x2_internal <= arm_x2_internal - 1;
+						pipe_x2_internal <= pipe_x2_internal - 1;
 					end if;
 					
-					if arm_x3_internal = 0 then
+					if pipe_x3_internal = 0 then
 						-- recycle to right edge with new gap
-						arm_x3_internal <= to_unsigned(640,10);
-						arm_gap3_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
+						pipe_x3_internal <= to_unsigned(640,10);
+						pipe_gap3_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
 					else
 						-- move left by 1
-						arm_x3_internal <= arm_x3_internal - 1;
+						pipe_x3_internal <= pipe_x3_internal - 1;
 					end if;
 				end if;
 			end if;
-		end process Arm_Place;
+		end process Pipe_Place;
 		
 		Collision_Detection: process(clk)
 		begin
@@ -171,14 +171,14 @@ architecture logic of game_logic is
 								shield_internal <= '0';  -- absorb hit, no life lost
 								cooldown <= to_unsigned(3000000, 22);
 							else 
-								arm_x1_internal <= to_unsigned(200, 10);
-								arm_x2_internal <= to_unsigned(400, 10);
-								arm_x3_internal <= to_unsigned(600, 10);
-								arm_gap1_internal <= to_unsigned(240, 10);
-								arm_gap2_internal <= to_unsigned(240, 10);
-								arm_gap3_internal <= to_unsigned(240, 10);
+								pipe_x1_internal <= to_unsigned(200, 10);
+								pipe_x2_internal <= to_unsigned(400, 10);
+								pipe_x3_internal <= to_unsigned(600, 10);
+								pipe_gap1_internal <= to_unsigned(240, 10);
+								pipe_gap2_internal <= to_unsigned(240, 10);
+								pipe_gap3_internal <= to_unsigned(240, 10);
 								cooldown <= to_unsigned(3000000, 22);
-								child_y_internal <= to_unsigned(240, 10); 
+								sprite_y_internal <= to_unsigned(240, 10); 
 								velocity <= to_signed(0, 10);
 								if lives_internal = 1 then
 									lives_zero_internal <= '1';
@@ -200,15 +200,15 @@ architecture logic of game_logic is
 				else
 				
 					if game_active = '1' and update_tick = '1' then
-						if arm_x1_internal = 100 then
+						if pipe_x1_internal = 100 then
 							score_internal <= score_internal + 1;
 						end if;
 						
-						if arm_x2_internal = 100 then
+						if pipe_x2_internal = 100 then
 							score_internal <= score_internal + 1;
 						end if;
 						
-						if arm_x3_internal = 100 then
+						if pipe_x3_internal = 100 then
 							score_internal <= score_internal + 1;
 						end if;
 						
@@ -246,8 +246,8 @@ architecture logic of game_logic is
 					
 					-- pickup collision check here (every clock, not just on tick)
 					if game_active = '1' then
-						if child_y_internal >= powerup_y_internal - 8 and
-						   child_y_internal <= powerup_y_internal + 8 and
+						if sprite_y_internal >= powerup_y_internal - 8 and
+						   sprite_y_internal <= powerup_y_internal + 8 and
 						   to_unsigned(100, 10) >= powerup_x_internal - 8 and
 						   to_unsigned(100, 10) <= powerup_x_internal then
 							-- apply effect
@@ -271,13 +271,13 @@ architecture logic of game_logic is
     lives_zero  <= lives_zero_internal; 
     level       <= std_logic_vector(level_internal);
     lives       <= std_logic_vector(lives_internal);
-    child_y     <= std_logic_vector(child_y_internal);
-    arm_x1      <= std_logic_vector(arm_x1_internal);
-    arm_x2      <= std_logic_vector(arm_x2_internal);
-    arm_x3      <= std_logic_vector(arm_x3_internal);
-    arm_gap1    <= std_logic_vector(arm_gap1_internal);
-    arm_gap2    <= std_logic_vector(arm_gap2_internal);
-    arm_gap3    <= std_logic_vector(arm_gap3_internal);
+    sprite_y     <= std_logic_vector(sprite_y_internal);
+    pipe_x1      <= std_logic_vector(pipe_x1_internal);
+    pipe_x2      <= std_logic_vector(pipe_x2_internal);
+    pipe_x3      <= std_logic_vector(pipe_x3_internal);
+    pipe_gap1    <= std_logic_vector(pipe_gap1_internal);
+    pipe_gap2    <= std_logic_vector(pipe_gap2_internal);
+    pipe_gap3    <= std_logic_vector(pipe_gap3_internal);
     score       <= std_logic_vector(score_internal);
 	powerup_x    <= std_logic_vector(powerup_x_internal);
 	powerup_y    <= std_logic_vector(powerup_y_internal);

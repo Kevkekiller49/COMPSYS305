@@ -32,8 +32,8 @@ architecture wiring of game_top_level is
     signal left_click, right_click : std_logic;
 
     -- Game logic outputs
-    signal child_y, arm_x1, arm_x2, arm_x3       : std_logic_vector(9 downto 0);
-    signal arm_gap1, arm_gap2, arm_gap3           : std_logic_vector(9 downto 0);
+    signal sprite_y, pipe_x1, pipe_x2, pipe_x3       : std_logic_vector(9 downto 0);
+    signal pipe_gap1, pipe_gap2, pipe_gap3           : std_logic_vector(9 downto 0);
     signal score, lfsr_value                      : std_logic_vector(9 downto 0);
     signal display_mode, level, lives             : std_logic_vector(1 downto 0);
     signal game_active, training_mode, lives_zero : std_logic;
@@ -107,8 +107,8 @@ architecture wiring of game_top_level is
             lfsr_value, mouse_y : in  std_logic_vector(9 downto 0);
             lives_zero          : out std_logic;
             level, lives        : out std_logic_vector(1 downto 0);
-            child_y, arm_x1, arm_x2, arm_x3,
-            arm_gap1, arm_gap2, arm_gap3, score : out std_logic_vector(9 downto 0);
+            sprite_y, pipe_x1, pipe_x2, pipe_x3,
+            pipe_gap1, pipe_gap2, pipe_gap3, score : out std_logic_vector(9 downto 0);
 			shield_active, powerup_type : out std_logic;
 			powerup_x, powerup_y : out std_logic_vector(9 downto 0)
         );
@@ -117,9 +117,9 @@ architecture wiring of game_top_level is
     component renderer is
         port(
             pixel_row, pixel_column      : in  std_logic_vector(9 downto 0);
-            child_y                      : in  std_logic_vector(9 downto 0);
-            arm_x1, arm_x2, arm_x3      : in  std_logic_vector(9 downto 0);
-            arm_gap1, arm_gap2, arm_gap3 : in  std_logic_vector(9 downto 0);
+            sprite_y                      : in  std_logic_vector(9 downto 0);
+            pipe_x1, pipe_x2, pipe_x3      : in  std_logic_vector(9 downto 0);
+            pipe_gap1, pipe_gap2, pipe_gap3 : in  std_logic_vector(9 downto 0);
 			powerup_x, powerup_y : in std_logic_vector(9 downto 0);
 			powerup_type, shield_active : in std_logic;
             clk, reset                   : in  std_logic;
@@ -243,13 +243,13 @@ begin
         lives_zero    => lives_zero,
         level         => level,
         lives         => lives,
-        child_y       => child_y,
-        arm_x1        => arm_x1,
-        arm_x2        => arm_x2,
-        arm_x3        => arm_x3,
-        arm_gap1      => arm_gap1,
-        arm_gap2      => arm_gap2,
-        arm_gap3      => arm_gap3,
+        sprite_y       => sprite_y,
+        pipe_x1        => pipe_x1,
+        pipe_x2        => pipe_x2,
+        pipe_x3        => pipe_x3,
+        pipe_gap1      => pipe_gap1,
+        pipe_gap2      => pipe_gap2,
+        pipe_gap3      => pipe_gap3,
         score         => score,
 		shield_active => shield_active,
 		powerup_type  => powerup_type,
@@ -264,13 +264,13 @@ begin
         reset    => reset,
         pixel_row    => pixel_row,
         pixel_column => pixel_column,
-        child_y      => child_y,
-        arm_x1       => arm_x1,
-        arm_x2       => arm_x2,
-        arm_x3       => arm_x3,
-        arm_gap1     => arm_gap1,
-        arm_gap2     => arm_gap2,
-        arm_gap3     => arm_gap3,
+        sprite_y      => sprite_y,
+        pipe_x1       => pipe_x1,
+        pipe_x2       => pipe_x2,
+        pipe_x3       => pipe_x3,
+        pipe_gap1     => pipe_gap1,
+        pipe_gap2     => pipe_gap2,
+        pipe_gap3     => pipe_gap3,
         red          => renderer_r,
         green        => renderer_g,
         blue         => renderer_b,

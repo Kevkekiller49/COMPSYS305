@@ -6,9 +6,9 @@ use work.sprite_pkg.all;
 entity renderer is
     port(
         pixel_row, pixel_column : in std_logic_vector(9 downto 0);
-        child_y                 : in std_logic_vector(9 downto 0);
-        arm_x1, arm_x2, arm_x3 : in std_logic_vector(9 downto 0);
-        arm_gap1, arm_gap2, arm_gap3 : in std_logic_vector(9 downto 0);
+        sprite_y                 : in std_logic_vector(9 downto 0);
+        pipe_x1, pipe_x2, pipe_x3 : in std_logic_vector(9 downto 0);
+        pipe_gap1, pipe_gap2, pipe_gap3 : in std_logic_vector(9 downto 0);
 		powerup_x, powerup_y : in std_logic_vector(9 downto 0);
         clk, reset                   : in std_logic;  -- animation frame 0/1
         red, green, blue        : out std_logic;
@@ -25,7 +25,7 @@ architecture rtl of renderer is
 begin
 	row <= unsigned(pixel_row);
 	col <= unsigned(pixel_column);
-	cy  <= unsigned(child_y);
+	cy  <= unsigned(sprite_y);
 	
 	process(clk)
 	begin
@@ -42,7 +42,7 @@ begin
 		end if;
 	end process;
 	
-	process(row, col, cy, arm_x1, arm_x2, arm_x3, arm_gap1, arm_gap2, arm_gap3, frame, powerup_x, powerup_y, powerup_type, shield_active)
+	process(row, col, cy, pipe_x1, pipe_x2, pipe_x3, pipe_gap1, pipe_gap2, pipe_gap3, frame, powerup_x, powerup_y, powerup_type, shield_active)
     variable sp : std_logic_vector(2 downto 0);
 	begin
 		-- default: blue background
@@ -61,22 +61,22 @@ begin
 				end if;
 
 			-- pipes next
-			elsif col + 20 >= unsigned(arm_x1) and col <= unsigned(arm_x1) and
-				 (row < unsigned(arm_gap1) - 40 or row > unsigned(arm_gap1) + 40) then
+			elsif col + 20 >= unsigned(pipe_x1) and col <= unsigned(pipe_x1) and
+				 (row < unsigned(pipe_gap1) - 40 or row > unsigned(pipe_gap1) + 40) then
 				if to_integer(row + col) mod 2 = 0 then
 					red <= '1'; green <= '1'; blue <= '1';
 				else
 					red <= '0'; green <= '0'; blue <= '1';
 				end if;
-			elsif col + 20 >= unsigned(arm_x2) and col <= unsigned(arm_x2) and
-				 (row < unsigned(arm_gap2) - 40 or row > unsigned(arm_gap2) + 40) then
+			elsif col + 20 >= unsigned(pipe_x2) and col <= unsigned(pipe_x2) and
+				 (row < unsigned(pipe_gap2) - 40 or row > unsigned(pipe_gap2) + 40) then
 				if to_integer(row + col) mod 2 = 0 then
 					red <= '1'; green <= '1'; blue <= '1';
 				else
 					red <= '0'; green <= '0'; blue <= '1';
 				end if;
-			elsif col + 20 >= unsigned(arm_x3) and col <= unsigned(arm_x3) and
-				 (row < unsigned(arm_gap3) - 40 or row > unsigned(arm_gap3) + 40) then
+			elsif col + 20 >= unsigned(pipe_x3) and col <= unsigned(pipe_x3) and
+				 (row < unsigned(pipe_gap3) - 40 or row > unsigned(pipe_gap3) + 40) then
 				if to_integer(row + col) mod 2 = 0 then
 					red <= '1'; green <= '1'; blue <= '1';
 				else
