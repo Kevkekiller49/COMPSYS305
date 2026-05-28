@@ -49,8 +49,11 @@ architecture behaviour of game_fsm is
     -- current_state holds where the FSM is right now.
     -- next_state holds where it will go on the next clock edge.
     signal current_state : state_type;
-    signal next_state    : state_type;
-
+    signal start_prev : std_logic := '0';
+	 signal pause_prev : std_logic := '0';
+	 signal start_edge : std_logic;
+	 signal pause_edge : std_logic;
+ 
 begin
 
     -- =========================================================================

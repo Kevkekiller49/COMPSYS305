@@ -54,7 +54,7 @@ architecture wiring of game_top_level is
 	signal locked : std_logic;
 	signal raw_reset : std_logic;
 	signal btn1_prev, btn2_prev : std_logic;
-	signal btn1_pulse, btn2_prev : std_logic;
+	signal btn1_pulse, btn2_pulse : std_logic;
 
     -- Component declarations
     component VGA_SYNC is
@@ -159,7 +159,7 @@ begin
     internal_button_2 <= not KEY(2);  -- pause
 
     -- Drive VGA vertical sync from internal signal
-    VGA_VS <= vert_sync_internal
+    VGA_VS <= vert_sync_internal;
 	VGA_R <= (others => red_out_internal);
 	VGA_G <= (others => green_out_internal);
 	VGA_B <= (others => blue_out_internal);
@@ -186,7 +186,7 @@ begin
 		begin
 			if rising_edge(clk_25) then
 				pixel_row_d    <= pixel_row;
-				pixel_column_d <= pixel_column;
+				pixel_col_d <= pixel_column;
 				btn1_prev <= internal_button_1;
 				btn2_prev <= internal_button_2;
 			end if;
@@ -207,8 +207,8 @@ begin
     port map(
         clock_25Mhz    => clk_25,
         red            => renderer_r or text_on,
-        green          => renderer_g or text_on,,
-        blue           => renderer_b or text_on,,
+        green          => renderer_g or text_on,
+        blue           => renderer_b or text_on,
         red_out        => red_out_internal,
         green_out      => green_out_internal,
         blue_out       => blue_out_internal,
