@@ -53,13 +53,10 @@ architecture wiring of game_top_level is
 
     signal internal_button_1 : std_logic;
     signal internal_button_2 : std_logic;
-    signal internal_button_3 : std_logic;
 
     signal btn1_sync0, btn1_sync1, btn1_prev : std_logic := '0';
     signal btn2_sync0, btn2_sync1, btn2_prev : std_logic := '0';
-    signal btn3_sync0, btn3_sync1 : std_logic := '0';
     signal btn1_pulse, btn2_pulse : std_logic := '0';
-    signal flap_input : std_logic := '0';
 
     -- Delay text coordinates by one clock to match the ROM/renderer timing
     signal pixel_row_d, pixel_col_d : std_logic_vector(9 downto 0);
@@ -168,7 +165,6 @@ begin
 
     internal_button_1 <= not KEY(1);  -- start
     internal_button_2 <= not KEY(2);  -- pause
-    internal_button_3 <= not KEY(3);  -- flap/jump control
 
     VGA_VS <= vert_sync_internal;
     VGA_R <= (others => red_out_internal);
@@ -183,7 +179,8 @@ begin
     level_disp <= "00" & level;
     lives_disp <= "00" & lives;
 
-    HEX4 <= (others => '1');
+    -- HEX5 and HEX3 are unused/off. Lives are shown on HEX4.
+    HEX3 <= (others => '1');
     HEX5 <= (others => '1');
 
     -- Synchronise buttons and create one-clock pulses.
@@ -203,9 +200,6 @@ begin
                 btn2_sync1 <= '0';
                 btn2_prev  <= '0';
                 btn2_pulse <= '0';
-
-                btn3_sync0 <= '0';
-                btn3_sync1 <= '0';
             else
                 pixel_row_d <= pixel_row;
                 pixel_col_d <= pixel_column;
@@ -219,15 +213,9 @@ begin
                 btn2_sync1 <= btn2_sync0;
                 btn2_pulse <= btn2_sync1 and not btn2_prev;
                 btn2_prev  <= btn2_sync1;
-
-                btn3_sync0 <= internal_button_3;
-                btn3_sync1 <= btn3_sync0;
             end if;
         end if;
     end process;
-
-    -- Flap control: mouse left-click OR KEY3.
-    flap_input <= left_click or btn3_sync1;
 
     -- Score BCD extraction: show last two decimal digits.
     process(score)
@@ -284,7 +272,7 @@ begin
         reset         => logic_reset,
         game_active   => game_active,
         training_mode => training_mode,
-        left_click    => flap_input,
+        left_click    => left_click,
         lfsr_value    => lfsr_value,
         mouse_y       => mouse_y,
         lives_zero    => lives_zero,
@@ -363,6 +351,6 @@ begin
     port map(BCD_digit => level_disp, SevenSeg_out => HEX2);
 
     SEG_LIVES : component BCD_to_SevenSeg
-    port map(BCD_digit => lives_disp, SevenSeg_out => HEX3);
+    port map(BCD_digit => lives_disp, SevenSeg_out => HEX4);
 
 end architecture wiring;

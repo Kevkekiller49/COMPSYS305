@@ -21,12 +21,12 @@ architecture Behavioral of text_display is
     signal f_col     : std_logic_vector(2 downto 0) := "000";
     signal rom_out   : std_logic;
     signal text_en   : std_logic := '0';
-    signal text_en_d : std_logic := '0';
 
-    constant MENU_TITLE : string := "ESCAPE FROM EPSTEIN ISLAND";
+    constant MENU_TITLE : string := "FLAPPY FPGA";
     constant MENU_START : string := "KEY1 START";
     constant MENU_MODE1 : string := "SW1 UP TRAINING";
     constant MENU_MODE2 : string := "SW1 DOWN CHALLENGE";
+
     constant HUD_SCORE : string := "SCORE";
     constant HUD_LEVEL : string := "LEVEL";
     constant HUD_LIVES : string := "LIVES";
@@ -34,11 +34,17 @@ architecture Behavioral of text_display is
     constant OVER_TITLE : string := "GAME OVER";
     constant OVER_INFO  : string := "KEY1 MENU";
 
-    constant TITLE_X : integer := 232;
-    constant TITLE_Y : integer := 96;
+    constant MENU_TITLE_X : integer := (640 - (MENU_TITLE'length * 16)) / 2;
+    constant MENU_START_X : integer := (640 - (MENU_START'length * 8)) / 2;
+    constant MENU_MODE1_X : integer := (640 - (MENU_MODE1'length * 8)) / 2;
+    constant MENU_MODE2_X : integer := (640 - (MENU_MODE2'length * 8)) / 2;
+    constant OVER_TITLE_X : integer := (640 - (OVER_TITLE'length * 16)) / 2;
+    constant OVER_INFO_X  : integer := (640 - (OVER_INFO'length * 8)) / 2;
+    constant OVER_SCORE_X : integer := (640 - ((HUD_SCORE'length + 2) * 8)) / 2;
 
     function char_to_addr(c : character) return std_logic_vector is
     begin
+
         case c is
             when 'A' => return "000001";
             when 'B' => return "000010";
@@ -76,7 +82,8 @@ architecture Behavioral of text_display is
             when '7' => return "110111";
             when '8' => return "111000";
             when '9' => return "111001";
-            when others => return "100000"; -- space/blank
+            when ':' => return "111010";
+            when others => return "100000"; -- space
         end case;
     end function;
 
@@ -116,15 +123,8 @@ begin
             rom_mux_output    => rom_out
         );
 
-    -- char_rom has clocked RAM behaviour, so delay the enable by one clock.
-    process(clk)
-    begin
-        if rising_edge(clk) then
-            text_en_d <= text_en;
-        end if;
-    end process;
 
-    text_on <= rom_out and text_en_d;
+    text_on <= rom_out and text_en;
 
     process(pixel_row, pixel_col, display_mode, score, lives, level)
         variable row_i, col_i : integer;
@@ -151,15 +151,14 @@ begin
         -- ===================== MENU =====================
         if display_mode = "00" then
 
-            -- Big title: 2x scale, each character = 16 x 16 pixels
-            if row_i >= TITLE_Y and row_i < TITLE_Y + 16 and
-               col_i >= TITLE_X and col_i < TITLE_X + (MENU_TITLE'length * 16) then
-                idx       := (col_i - TITLE_X) / 16;
-                local_row := ((row_i - TITLE_Y) / 2) mod 8;
-                local_col := ((col_i - TITLE_X) / 2) mod 8;
+            -- Big title: 2x scale, char = 16x16 pixels
+            if row_i >= 96 and row_i < 112 and col_i >= MENU_TITLE_X and col_i < MENU_TITLE_X + MENU_TITLE'length * 16 then
+                idx       := (col_i - MENU_TITLE_X) / 16;
+                local_row := ((row_i - 96) / 2) mod 8;
+                local_col := ((col_i - MENU_TITLE_X) / 2) mod 8;
 
                 ch := char_from_string(MENU_TITLE, idx);
-                if idx < MENU_TITLE'length and ch /= ' ' then
+                if idx < MENU_TITLE'length then
                     text_en   <= '1';
                     char_addr <= char_to_addr(ch);
                     f_row     <= std_logic_vector(to_unsigned(local_row, 3));
@@ -167,13 +166,13 @@ begin
                 end if;
 
             -- KEY1 START
-            elsif row_i >= 220 and row_i < 228 and col_i >= 280 and col_i < 280 + (MENU_START'length * 8) then
-                idx       := (col_i - 280) / 8;
+            elsif row_i >= 220 and row_i < 228 and col_i >= MENU_START_X and col_i < MENU_START_X + MENU_START'length * 8 then
+                idx       := (col_i - MENU_START_X) / 8;
                 local_row := (row_i - 220) mod 8;
-                local_col := (col_i - 280) mod 8;
+                local_col := (col_i - MENU_START_X) mod 8;
 
                 ch := char_from_string(MENU_START, idx);
-                if idx < MENU_START'length and ch /= ' ' then
+                if idx < MENU_START'length then
                     text_en   <= '1';
                     char_addr <= char_to_addr(ch);
                     f_row     <= std_logic_vector(to_unsigned(local_row, 3));
@@ -181,13 +180,13 @@ begin
                 end if;
 
             -- SW1 UP TRAINING
-            elsif row_i >= 300 and row_i < 308 and col_i >= 248 and col_i < 248 + (MENU_MODE1'length * 8) then
-                idx       := (col_i - 248) / 8;
+            elsif row_i >= 300 and row_i < 308 and col_i >= MENU_MODE1_X and col_i < MENU_MODE1_X + MENU_MODE1'length * 8 then
+                idx       := (col_i - MENU_MODE1_X) / 8;
                 local_row := (row_i - 300) mod 8;
-                local_col := (col_i - 248) mod 8;
+                local_col := (col_i - MENU_MODE1_X) mod 8;
 
                 ch := char_from_string(MENU_MODE1, idx);
-                if idx < MENU_MODE1'length and ch /= ' ' then
+                if idx < MENU_MODE1'length then
                     text_en   <= '1';
                     char_addr <= char_to_addr(ch);
                     f_row     <= std_logic_vector(to_unsigned(local_row, 3));
@@ -195,13 +194,13 @@ begin
                 end if;
 
             -- SW1 DOWN CHALLENGE
-            elsif row_i >= 320 and row_i < 328 and col_i >= 236 and col_i < 236 + (MENU_MODE2'length * 8) then
-                idx       := (col_i - 236) / 8;
+            elsif row_i >= 320 and row_i < 328 and col_i >= MENU_MODE2_X and col_i < MENU_MODE2_X + MENU_MODE2'length * 8 then
+                idx       := (col_i - MENU_MODE2_X) / 8;
                 local_row := (row_i - 320) mod 8;
-                local_col := (col_i - 236) mod 8;
+                local_col := (col_i - MENU_MODE2_X) mod 8;
 
                 ch := char_from_string(MENU_MODE2, idx);
-                if idx < MENU_MODE2'length and ch /= ' ' then
+                if idx < MENU_MODE2'length then
                     text_en   <= '1';
                     char_addr <= char_to_addr(ch);
                     f_row     <= std_logic_vector(to_unsigned(local_row, 3));
@@ -216,49 +215,51 @@ begin
                 local_row := (row_i - 8) mod 8;
                 f_row <= std_logic_vector(to_unsigned(local_row, 3));
 
-                -- SCORE 00
-                if col_i >= 8 and col_i < 72 then
+                -- SCOREXX
+                if col_i >= 8 and col_i < 8 + (HUD_SCORE'length + 2) * 8 then
                     idx       := (col_i - 8) / 8;
                     local_col := (col_i - 8) mod 8;
+                    text_en   <= '1';
                     f_col     <= std_logic_vector(to_unsigned(local_col, 3));
 
                     if idx < HUD_SCORE'length then
-                        text_en   <= '1';
                         char_addr <= char_to_addr(char_from_string(HUD_SCORE, idx));
-                    elsif idx = HUD_SCORE'length + 1 then
-                        text_en   <= '1';
+                    elsif idx = HUD_SCORE'length then
                         char_addr <= digit_to_addr(sc / 10);
-                    elsif idx = HUD_SCORE'length + 2 then
-                        text_en   <= '1';
+                    elsif idx = HUD_SCORE'length + 1 then
                         char_addr <= digit_to_addr(sc mod 10);
+                    else
+                        char_addr <= char_to_addr(' ');
                     end if;
 
-                -- LEVEL 1
-                elsif col_i >= 200 and col_i < 264 then
+                -- LEVEL:X
+                elsif col_i >= 200 and col_i < 200 + (HUD_LEVEL'length + 1) * 8 then
                     idx       := (col_i - 200) / 8;
                     local_col := (col_i - 200) mod 8;
+                    text_en   <= '1';
                     f_col     <= std_logic_vector(to_unsigned(local_col, 3));
 
                     if idx < HUD_LEVEL'length then
-                        text_en   <= '1';
                         char_addr <= char_to_addr(char_from_string(HUD_LEVEL, idx));
-                    elsif idx = HUD_LEVEL'length + 1 then
-                        text_en   <= '1';
+                    elsif idx = HUD_LEVEL'length then
                         char_addr <= digit_to_addr(lv);
+                    else
+                        char_addr <= char_to_addr(' ');
                     end if;
 
-                -- LIVES 3
-                elsif col_i >= 400 and col_i < 464 then
+                -- LIVES:X
+                elsif col_i >= 400 and col_i < 400 + (HUD_LIVES'length + 1) * 8 then
                     idx       := (col_i - 400) / 8;
                     local_col := (col_i - 400) mod 8;
+                    text_en   <= '1';
                     f_col     <= std_logic_vector(to_unsigned(local_col, 3));
 
                     if idx < HUD_LIVES'length then
-                        text_en   <= '1';
                         char_addr <= char_to_addr(char_from_string(HUD_LIVES, idx));
-                    elsif idx = HUD_LIVES'length + 1 then
-                        text_en   <= '1';
+                    elsif idx = HUD_LIVES'length then
                         char_addr <= digit_to_addr(li);
+                    else
+                        char_addr <= char_to_addr(' ');
                     end if;
                 end if;
             end if;
@@ -267,47 +268,47 @@ begin
         elsif display_mode = "10" then
 
             -- GAME OVER, 2x scale
-            if row_i >= 80 and row_i < 96 and col_i >= 248 and col_i < 248 + (OVER_TITLE'length * 16) then
-                idx       := (col_i - 248) / 16;
+            if row_i >= 80 and row_i < 96 and col_i >= OVER_TITLE_X and col_i < OVER_TITLE_X + OVER_TITLE'length * 16 then
+                idx       := (col_i - OVER_TITLE_X) / 16;
                 local_row := ((row_i - 80) / 2) mod 8;
-                local_col := ((col_i - 248) / 2) mod 8;
+                local_col := ((col_i - OVER_TITLE_X) / 2) mod 8;
 
                 ch := char_from_string(OVER_TITLE, idx);
-                if idx < OVER_TITLE'length and ch /= ' ' then
+                if idx < OVER_TITLE'length then
                     text_en   <= '1';
                     char_addr <= char_to_addr(ch);
                     f_row     <= std_logic_vector(to_unsigned(local_row, 3));
                     f_col     <= std_logic_vector(to_unsigned(local_col, 3));
                 end if;
 
-            -- SCORE 00
-            elsif row_i >= 220 and row_i < 228 and col_i >= 288 and col_i < 352 then
-                idx       := (col_i - 288) / 8;
+            -- SCORE:XX
+            elsif row_i >= 220 and row_i < 228 and col_i >= OVER_SCORE_X and col_i < OVER_SCORE_X + (HUD_SCORE'length + 2) * 8 then
+                idx       := (col_i - OVER_SCORE_X) / 8;
                 local_row := (row_i - 220) mod 8;
-                local_col := (col_i - 288) mod 8;
+                local_col := (col_i - OVER_SCORE_X) mod 8;
 
-                f_row <= std_logic_vector(to_unsigned(local_row, 3));
-                f_col <= std_logic_vector(to_unsigned(local_col, 3));
+                text_en <= '1';
+                f_row   <= std_logic_vector(to_unsigned(local_row, 3));
+                f_col   <= std_logic_vector(to_unsigned(local_col, 3));
 
                 if idx < HUD_SCORE'length then
-                    text_en   <= '1';
                     char_addr <= char_to_addr(char_from_string(HUD_SCORE, idx));
-                elsif idx = HUD_SCORE'length + 1 then
-                    text_en   <= '1';
+                elsif idx = HUD_SCORE'length then
                     char_addr <= digit_to_addr(sc / 10);
-                elsif idx = HUD_SCORE'length + 2 then
-                    text_en   <= '1';
+                elsif idx = HUD_SCORE'length + 1 then
                     char_addr <= digit_to_addr(sc mod 10);
+                else
+                    char_addr <= char_to_addr(' ');
                 end if;
 
             -- KEY1 MENU
-            elsif row_i >= 320 and row_i < 328 and col_i >= 284 and col_i < 284 + (OVER_INFO'length * 8) then
-                idx       := (col_i - 284) / 8;
+            elsif row_i >= 320 and row_i < 328 and col_i >= OVER_INFO_X and col_i < OVER_INFO_X + OVER_INFO'length * 8 then
+                idx       := (col_i - OVER_INFO_X) / 8;
                 local_row := (row_i - 320) mod 8;
-                local_col := (col_i - 284) mod 8;
+                local_col := (col_i - OVER_INFO_X) mod 8;
 
                 ch := char_from_string(OVER_INFO, idx);
-                if idx < OVER_INFO'length and ch /= ' ' then
+                if idx < OVER_INFO'length then
                     text_en   <= '1';
                     char_addr <= char_to_addr(ch);
                     f_row     <= std_logic_vector(to_unsigned(local_row, 3));
