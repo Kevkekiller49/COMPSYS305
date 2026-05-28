@@ -296,11 +296,11 @@ begin
     );
 
     -- Text display: overlays menu/HUD/game-over text
-    TEXT_UNIT : component text_display
+	TEXT_UNIT : component text_display
     port map(
         clk          => clk_25,
-        pixel_row_d     => pixel_row,
-        pixel_col_d    => pixel_column,
+        pixel_row    => pixel_row_d,
+        pixel_col    => pixel_col_d,
         display_mode => display_mode,
         score        => score,
         lives        => lives,
