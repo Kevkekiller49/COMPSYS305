@@ -3,274 +3,277 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 entity game_logic is
-	port (clk, reset, game_active, training_mode, left_click : in std_logic;
-		lfsr_value, mouse_y : in std_logic_vector(9 downto 0);
-		lives_zero, shield_active, powerup_type : out std_logic;
-		level, lives : out std_logic_vector(1 downto 0);
-		sprite_y, pipe_x1, pipe_x2, pipe_x3, pipe_gap1, pipe_gap2, pipe_gap3, score, powerup_x, powerup_y : out std_logic_vector(9 downto 0));
+    port(
+        clk, reset, game_active, training_mode, left_click : in  std_logic;
+        lfsr_value, mouse_y : in  std_logic_vector(9 downto 0);
+        lives_zero          : out std_logic;
+        level, lives        : out std_logic_vector(1 downto 0);
+        sprite_y, pipe_x1, pipe_x2, pipe_x3,
+        pipe_gap1, pipe_gap2, pipe_gap3, score : out std_logic_vector(9 downto 0);
+        shield_active, powerup_type : out std_logic;
+        powerup_x, powerup_y : out std_logic_vector(9 downto 0)
+    );
 end entity game_logic;
 
-architecture logic of game_logic is
-	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal, collision_hit,	powerup_collected, click_latch  : std_logic;
-	signal level_internal, lives_internal : unsigned(1 downto 0);
-	signal sprite_y_internal, pipe_x1_internal, pipe_x2_internal, pipe_x3_internal, pipe_gap1_internal, pipe_gap2_internal, pipe_gap3_internal, score_internal, powerup_x_internal, powerup_y_internal : unsigned(9 downto 0);
-	signal velocity : signed(9 downto 0);
-	signal update_counter : unsigned(19 downto 0);
-	signal cooldown : unsigned(21 downto 0);
-	
-	begin
-		collision <= '1' when
-		(sprite_y_internal >= 471) or
-		(sprite_y_internal <= 8) or
-		(pipe_x1_internal >= 100 and pipe_x1_internal <= 131 and
-		(sprite_y_internal < pipe_gap1_internal - 40 or sprite_y_internal > pipe_gap1_internal + 40)) or
-		(pipe_x2_internal >= 100 and pipe_x1_internal <= 131 and
-		(sprite_y_internal < pipe_gap2_internal - 40 or sprite_y_internal > pipe_gap2_internal + 40)) or
-		(pipe_x3_internal >= 100 and pipe_x1_internal <= 131 and
-		(sprite_y_internal < pipe_gap3_internal - 40 or sprite_y_internal > pipe_gap3_internal + 40))
-		else '0';
-		update_counter_process: process(clk)
-		variable threshold : unsigned(19 downto 0);
-		begin
-			if rising_edge(clk) then
-			    if reset = '1' then
-					update_counter <= (others => '0');
-					update_tick <= '0';
-				else
-					if level_internal = "00" then
-						threshold := to_unsigned(800000, 20);
-					elsif level_internal = "01" then
-						threshold := to_unsigned(600000, 20);
-					else
-						threshold := to_unsigned(400000, 20);
-					end if;
-						
-					if update_counter >= threshold then
-						update_counter <= (others => '0');
-						update_tick <= '1';
-					else
-						update_counter <= update_counter + 1;
-						update_tick <= '0';
-					end if;
-				end if;
-			end if;			
-		end process update_counter_process;
-		
-		process(clk)
-		begin
-			if rising_edge(clk) then
-				if update_tick = '1' then
-					click_latch <= '0';
-				elsif left_click = '1' then
-					click_latch <= '1';
-				end if;
-			end if;
-		end process;
-		
-		Move_Sprite: process(clk)
-			variable new_pos       : signed(11 downto 0);
-			variable next_velocity : signed(9 downto 0);
-		begin
-			if rising_edge(clk) then
-				if reset = '1' then
-					sprite_y_internal <= to_unsigned(240,10);
-					velocity <= to_signed(0,10);
-				elsif collision_hit = '1' then
-					sprite_y_internal <= to_unsigned(240, 10);
-					velocity <= to_signed(0, 10);
-				elsif game_active = '1' and update_tick = '1' then
-					next_velocity := velocity;
-					if click_latch = '1' then
-						next_velocity := to_signed(-10, 10);
-					else
-						if next_velocity < to_signed(12, 10) then
-							next_velocity := next_velocity + to_signed(1, 10);
-						end if;
-					end if;
-					new_pos := resize(signed('0' & std_logic_vector(sprite_y_internal)), 12)
-							   + resize(next_velocity, 12);
-					if new_pos >= to_signed(471, 12) then
-						sprite_y_internal <= to_unsigned(471, 10);
-						velocity <= to_signed(0, 10);
-					elsif new_pos <= to_signed(8, 12) then
-						sprite_y_internal <= to_unsigned(8, 10);
-						velocity <= to_signed(0, 10);
-					else
-						sprite_y_internal <= unsigned(new_pos(9 downto 0));
-						velocity <= next_velocity;
-					end if;
-				end if;
-			end if;
-		end process Move_Sprite;
-			
-		Pipe_Place: process(clk)
-		begin
-			if rising_edge(clk) then
-				if reset = '1' then
-					pipe_x1_internal <= to_unsigned(200,10);
-					pipe_x2_internal <= to_unsigned(400,10);
-					pipe_x3_internal <= to_unsigned(600,10);
-					pipe_gap1_internal <= to_unsigned(240,10);
-					pipe_gap2_internal <= to_unsigned(240,10);
-					pipe_gap3_internal <= to_unsigned(240,10);
-				elsif collision_hit = '1' then
-					pipe_x1_internal <= to_unsigned(200, 10);
-					pipe_x2_internal <= to_unsigned(400, 10);
-					pipe_x3_internal <= to_unsigned(600, 10);
-					pipe_gap1_internal <= to_unsigned(240, 10);
-					pipe_gap2_internal <= to_unsigned(240, 10);
-					pipe_gap3_internal <= to_unsigned(240, 10);
-				elsif game_active = '1' and update_tick = '1' then
-					if pipe_x1_internal = 0 then
-						pipe_x1_internal <= to_unsigned(640,10);
-						-- pipe 1: bits 7:0
-						pipe_gap1_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
-					else
-						pipe_x1_internal <= pipe_x1_internal - 1;
-					end if;
-					if pipe_x2_internal = 0 then
-						pipe_x2_internal <= to_unsigned(640,10);
-						-- pipe 2: bits 8:1 (shifted)
-						pipe_gap2_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(8 downto 1));
-					else
-						pipe_x2_internal <= pipe_x2_internal - 1;
-					end if;
-					if pipe_x3_internal = 0 then
-						pipe_x3_internal <= to_unsigned(640,10);
-						-- pipe 3: bits 9:2
-						pipe_gap3_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(9 downto 2));
-					else
-						pipe_x3_internal <= pipe_x3_internal - 1;
-					end if;
-				end if;
-			end if;
-		end process Pipe_Place;
-		
-		Collision_Detection: process(clk)
-		begin
-			if rising_edge(clk) then
-				if reset = '1' then
-					if training_mode = '1' then
-						lives_internal <= to_unsigned(3, 2);
-					else
-						lives_internal <= to_unsigned(1, 2);
-					end if;
-					cooldown <= (others => '0');
-					lives_zero_internal <= '0';
-					collision_hit <= '0';
-					powerup_collected <= '0';
-					shield_internal <= '0';
-				else
-					collision_hit <= '0';
-					powerup_collected <= '0';
-					if game_active = '1' then
-						if cooldown > 0 then
-							cooldown <= cooldown - 1;
-						elsif collision = '1' then
-							if shield_internal = '1' then
-								shield_internal <= '0';
-								cooldown <= to_unsigned(3000000, 22);
-							else
-								collision_hit <= '1';
-								cooldown <= to_unsigned(3000000, 22);
-								if lives_internal = 1 then
-									lives_zero_internal <= '1';
-								end if;
-								lives_internal <= lives_internal - 1;
-							end if;
-						end if;
+architecture rtl of game_logic is
 
-						-- Power up pickup
-						if sprite_y_internal >= powerup_y_internal - 8 and
-						   sprite_y_internal <= powerup_y_internal + 8 and
-						   to_unsigned(100, 10) >= powerup_x_internal - 8 and
-						   to_unsigned(100, 10) <= powerup_x_internal then
-							if powerup_type_internal = '0' then
-								shield_internal <= '1';
-							else
-								if lives_internal < to_unsigned(3, 2) then
-									lives_internal <= lives_internal + 1;
-								end if;
-							end if;
-							powerup_collected <= '1';
-						end if;
-					end if;
-				end if;
-			end if;
-		end process Collision_Detection;
-		
-		Score_Tracker: process(clk)
-		begin
-			if rising_edge(clk) then
-				if reset = '1' then
-					score_internal <= (others => '0');
-					level_internal <= (others => '0');
-				else
-				
-					if game_active = '1' and update_tick = '1' then
-						if pipe_x1_internal = 100 then
-							score_internal <= score_internal + 1;
-						end if;
-						
-						if pipe_x2_internal = 100 then
-							score_internal <= score_internal + 1;
-						end if;
-						
-						if pipe_x3_internal = 100 then
-							score_internal <= score_internal + 1;
-						end if;
-						
-						if score_internal >= 20 then
-							level_internal <= to_unsigned(2, 2);
-						elsif score_internal >= 10 then
-							level_internal <= to_unsigned(1, 2);
-						else
-							level_internal <= (others => '0');
-						end if;
-					end if;
-				end if;
-			end if;
-		end process Score_Tracker;
-		
-		Power_Up_Move : process(clk)
-		begin
-			if rising_edge(clk) then
-				if reset = '1' then
-					powerup_x_internal <= to_unsigned(640, 10);
-					powerup_y_internal <= to_unsigned(240, 10);
-					powerup_type_internal <= '0';
-				elsif powerup_collected = '1' then
-					powerup_x_internal <= to_unsigned(640, 10);
-					powerup_y_internal <= to_unsigned(100, 10) + unsigned("00" & lfsr_value(7 downto 0));
-					powerup_type_internal <= not powerup_type_internal;
-				elsif game_active = '1' and update_tick = '1' then
-					if powerup_x_internal = 0 then
-						powerup_x_internal <= to_unsigned(640, 10);
-						powerup_y_internal <= to_unsigned(100, 10) + unsigned("00" & lfsr_value(7 downto 0));
-						powerup_type_internal <= not powerup_type_internal;
-					else
-						powerup_x_internal <= powerup_x_internal - 1;
-					end if;
-				end if;
-			end if;
-		end process Power_Up_Move;
-		
-	-- Output assignments
-    lives_zero  <= lives_zero_internal; 
-    level       <= std_logic_vector(level_internal);
-    lives       <= std_logic_vector(lives_internal);
-    sprite_y     <= std_logic_vector(sprite_y_internal);
-    pipe_x1      <= std_logic_vector(pipe_x1_internal);
-    pipe_x2      <= std_logic_vector(pipe_x2_internal);
-    pipe_x3      <= std_logic_vector(pipe_x3_internal);
-    pipe_gap1    <= std_logic_vector(pipe_gap1_internal);
-    pipe_gap2    <= std_logic_vector(pipe_gap2_internal);
-    pipe_gap3    <= std_logic_vector(pipe_gap3_internal);
-    score       <= std_logic_vector(score_internal);
-	powerup_x    <= std_logic_vector(powerup_x_internal);
-	powerup_y    <= std_logic_vector(powerup_y_internal);
-	powerup_type <= powerup_type_internal;
-	shield_active <= shield_internal;
+    constant BIRD_X      : integer := 100;
+    constant BIRD_W      : integer := 32;
+    constant BIRD_H      : integer := 32;
+    constant PIPE_W      : integer := 24;
+    constant GAP_HALF    : integer := 55;
+    constant FRAME_LIMIT : unsigned(18 downto 0) := to_unsigned(416666, 19); -- about 60 Hz at 25 MHz
 
-end architecture logic;
-			
+    signal frame_count : unsigned(18 downto 0) := (others => '0');
+
+    signal bird_y_i : integer range 0 to 448 := 224;
+    signal velocity : integer range -12 to 12 := 0;
+
+    signal pipe1_x_i : integer range 0 to 1023 := 680;
+    signal pipe2_x_i : integer range 0 to 1023 := 900;
+    signal pipe3_x_i : integer range 0 to 1023 := 1020;
+
+    signal gap1_i : integer range 80 to 400 := 160;
+    signal gap2_i : integer range 80 to 400 := 260;
+    signal gap3_i : integer range 80 to 400 := 340;
+
+    signal score_i : integer range 0 to 999 := 0;
+    signal lives_i : integer range 0 to 3 := 3;
+    signal level_i : integer range 0 to 3 := 1;
+
+    signal scored1, scored2, scored3 : std_logic := '0';
+    signal collision_cooldown : integer range 0 to 60 := 0;
+
+    signal pwr_x_i : integer range 0 to 1023 := 850;
+    signal pwr_y_i : integer range 0 to 479 := 220;
+    signal pwr_type_i : std_logic := '0'; -- 0 = shield, 1 = heart
+
+    signal shield_timer : integer range 0 to 300 := 0;
+
+    function random_gap(rand : std_logic_vector(9 downto 0); offset : integer) return integer is
+        variable val : integer;
+    begin
+        -- returns 90 to 369 so the pipe opening is always on screen
+        val := (to_integer(unsigned(rand)) + offset) mod 280;
+        return 90 + val;
+    end function;
+
+    function pipe_collision(px, gap, by : integer) return boolean is
+    begin
+        return ((BIRD_X + BIRD_W) >= (px - PIPE_W) and BIRD_X <= px) and
+               ((by < gap - GAP_HALF) or ((by + BIRD_H) > gap + GAP_HALF));
+    end function;
+
+begin
+
+    process(clk)
+        variable speed : integer;
+        variable hit   : boolean;
+        variable my    : integer;
+    begin
+        if rising_edge(clk) then
+
+            if reset = '1' then
+                frame_count <= (others => '0');
+
+                bird_y_i <= 224;
+                velocity <= 0;
+
+                pipe1_x_i <= 680;
+                pipe2_x_i <= 900;
+                pipe3_x_i <= 1020;
+
+                gap1_i <= random_gap(lfsr_value, 17);
+                gap2_i <= random_gap(lfsr_value, 103);
+                gap3_i <= random_gap(lfsr_value, 219);
+
+                score_i <= 0;
+                lives_i <= 3;
+                level_i <= 1;
+
+                scored1 <= '0';
+                scored2 <= '0';
+                scored3 <= '0';
+
+                collision_cooldown <= 0;
+
+                pwr_x_i <= 850;
+                pwr_y_i <= random_gap(lfsr_value, 55);
+                pwr_type_i <= lfsr_value(0);
+                shield_timer <= 0;
+
+            elsif game_active = '1' then
+
+                if frame_count >= FRAME_LIMIT then
+                    frame_count <= (others => '0');
+
+                    -- Difficulty/speed
+                    if training_mode = '1' then
+                        speed := 2;
+                        level_i <= 1;
+                    elsif score_i < 5 then
+                        speed := 2;
+                        level_i <= 1;
+                    elsif score_i < 15 then
+                        speed := 3;
+                        level_i <= 2;
+                    else
+                        speed := 4;
+                        level_i <= 3;
+                    end if;
+
+                    -- Bird movement.
+                    -- Left mouse click makes it jump; otherwise gravity pulls it down.
+                    if left_click = '1' then
+                        velocity <= -7;
+                    elsif velocity < 8 then
+                        velocity <= velocity + 1;
+                    end if;
+
+                    if bird_y_i + velocity < 0 then
+                        bird_y_i <= 0;
+                        velocity <= 0;
+                    elsif bird_y_i + velocity > 448 then
+                        bird_y_i <= 448;
+                        velocity <= 0;
+                    else
+                        bird_y_i <= bird_y_i + velocity;
+                    end if;
+
+                    my := to_integer(unsigned(mouse_y));
+                    if my > 40 and my < 440 then
+                        if my > bird_y_i + 6 then
+                            bird_y_i <= bird_y_i + 2;
+                        elsif my + 6 < bird_y_i then
+                            bird_y_i <= bird_y_i - 2;
+                        end if;
+                    end if;
+
+                    -- Move and recycle pipe 1
+                    if pipe1_x_i <= speed then
+                        pipe1_x_i <= 760;
+                        gap1_i <= random_gap(lfsr_value, score_i * 13 + 11);
+                        scored1 <= '0';
+                    else
+                        pipe1_x_i <= pipe1_x_i - speed;
+                    end if;
+
+                    -- Move and recycle pipe 2
+                    if pipe2_x_i <= speed then
+                        pipe2_x_i <= 760;
+                        gap2_i <= random_gap(lfsr_value, score_i * 17 + 89);
+                        scored2 <= '0';
+                    else
+                        pipe2_x_i <= pipe2_x_i - speed;
+                    end if;
+
+                    -- Move and recycle pipe 3
+                    if pipe3_x_i <= speed then
+                        pipe3_x_i <= 760;
+                        gap3_i <= random_gap(lfsr_value, score_i * 19 + 173);
+                        scored3 <= '0';
+                    else
+                        pipe3_x_i <= pipe3_x_i - speed;
+                    end if;
+
+                    -- Score when each pipe passes the player
+                    if pipe1_x_i < BIRD_X and scored1 = '0' then
+                        if score_i < 999 then
+                            score_i <= score_i + 1;
+                        end if;
+                        scored1 <= '1';
+                    end if;
+
+                    if pipe2_x_i < BIRD_X and scored2 = '0' then
+                        if score_i < 999 then
+                            score_i <= score_i + 1;
+                        end if;
+                        scored2 <= '1';
+                    end if;
+
+                    if pipe3_x_i < BIRD_X and scored3 = '0' then
+                        if score_i < 999 then
+                            score_i <= score_i + 1;
+                        end if;
+                        scored3 <= '1';
+                    end if;
+
+                    -- Move and recycle power-up
+                    if pwr_x_i <= speed then
+                        pwr_x_i <= 820;
+                        pwr_y_i <= random_gap(lfsr_value, score_i * 23 + 37);
+                        pwr_type_i <= lfsr_value(0);
+                    else
+                        pwr_x_i <= pwr_x_i - speed;
+                    end if;
+
+                    -- Collect power-up
+                    if pwr_x_i >= BIRD_X - 12 and pwr_x_i <= BIRD_X + BIRD_W + 12 and
+                       pwr_y_i >= bird_y_i - 12 and pwr_y_i <= bird_y_i + BIRD_H + 12 then
+                        if pwr_type_i = '1' then
+                            if lives_i < 3 then
+                                lives_i <= lives_i + 1;
+                            end if;
+                        else
+                            shield_timer <= 300; -- about 5 seconds
+                        end if;
+
+                        pwr_x_i <= 820;
+                        pwr_y_i <= random_gap(lfsr_value, score_i * 29 + 71);
+                        pwr_type_i <= not pwr_type_i;
+                    end if;
+
+                    if shield_timer > 0 then
+                        shield_timer <= shield_timer - 1;
+                    end if;
+
+                    -- Collision
+                    hit := pipe_collision(pipe1_x_i, gap1_i, bird_y_i) or
+                           pipe_collision(pipe2_x_i, gap2_i, bird_y_i) or
+                           pipe_collision(pipe3_x_i, gap3_i, bird_y_i) or
+                           bird_y_i <= 0 or bird_y_i >= 448;
+
+                    if collision_cooldown > 0 then
+                        collision_cooldown <= collision_cooldown - 1;
+                    elsif hit then
+                        collision_cooldown <= 45;
+
+                        if shield_timer > 0 then
+                            shield_timer <= 0;
+                        elsif lives_i > 0 then
+                            lives_i <= lives_i - 1;
+                        end if;
+                    end if;
+
+                else
+                    frame_count <= frame_count + 1;
+                end if;
+
+            else
+                -- MENU/PAUSE/GAME_OVER: freeze motion, but keep values for display.
+                frame_count <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    sprite_y  <= std_logic_vector(to_unsigned(bird_y_i, 10));
+
+    pipe_x1   <= std_logic_vector(to_unsigned(pipe1_x_i, 10));
+    pipe_x2   <= std_logic_vector(to_unsigned(pipe2_x_i, 10));
+    pipe_x3   <= std_logic_vector(to_unsigned(pipe3_x_i, 10));
+    pipe_gap1 <= std_logic_vector(to_unsigned(gap1_i, 10));
+    pipe_gap2 <= std_logic_vector(to_unsigned(gap2_i, 10));
+    pipe_gap3 <= std_logic_vector(to_unsigned(gap3_i, 10));
+
+    score <= std_logic_vector(to_unsigned(score_i, 10));
+
+    lives <= std_logic_vector(to_unsigned(lives_i, 2));
+    level <= std_logic_vector(to_unsigned(level_i, 2));
+    lives_zero <= '1' when lives_i = 0 else '0';
+
+    powerup_x <= std_logic_vector(to_unsigned(pwr_x_i, 10));
+    powerup_y <= std_logic_vector(to_unsigned(pwr_y_i, 10));
+    powerup_type <= pwr_type_i;
+    shield_active <= '1' when shield_timer > 0 else '0';
+
+end architecture rtl;

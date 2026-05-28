@@ -30,6 +30,7 @@
 --                  "10" = GAME OVER screen
 -- =============================================================================
 
+
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -53,7 +54,6 @@ architecture behaviour of game_fsm is
         GAME_OVER
     );
 
-    -- FIX: next_state must be declared before it is used.
     signal current_state : state_type := MENU;
     signal next_state    : state_type := MENU;
 
@@ -74,7 +74,6 @@ begin
     -- Next-state logic
     process(current_state, start_button, pause_button, mode_switch, lives_zero)
     begin
-        -- Default: stay in the same state unless a condition below changes it.
         next_state <= current_state;
 
         case current_state is
@@ -123,33 +122,43 @@ begin
     -- Output logic
     process(current_state)
     begin
-        -- Safe defaults
         game_active  <= '0';
+        training_mode <= '0';
         display_mode <= "00";
 
         case current_state is
 
             when MENU =>
-                game_active  <= '0';
-                display_mode <= "00";
+                game_active   <= '0';
+                training_mode <= '0';
+                display_mode  <= "00";
 
-            when TRAINING | CHALLENGE =>
-                game_active  <= '1';
-                display_mode <= "01";
+            when TRAINING =>
+                game_active   <= '1';
+                training_mode <= '1';
+                display_mode  <= "01";
 
-            when PAUSED_TRAINING | PAUSED_CHALLENGE =>
-                game_active  <= '0';
-                display_mode <= "01";
+            when CHALLENGE =>
+                game_active   <= '1';
+                training_mode <= '0';
+                display_mode  <= "01";
+
+            when PAUSED_TRAINING =>
+                game_active   <= '0';
+                training_mode <= '1';
+                display_mode  <= "01";
+
+            when PAUSED_CHALLENGE =>
+                game_active   <= '0';
+                training_mode <= '0';
+                display_mode  <= "01";
 
             when GAME_OVER =>
-                game_active  <= '0';
-                display_mode <= "10";
+                game_active   <= '0';
+                training_mode <= '0';
+                display_mode  <= "10";
 
         end case;
     end process;
-
-    training_mode <= '1' when
-        (current_state = TRAINING or current_state = PAUSED_TRAINING)
-        else '0';
 
 end architecture behaviour;
