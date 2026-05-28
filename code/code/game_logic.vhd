@@ -28,6 +28,7 @@ architecture rtl of game_logic is
 
     signal bird_y_i : integer range 0 to 448 := 224;
     signal velocity : integer range -12 to 12 := 0;
+    signal flap_prev : std_logic := '0';
 
     signal pipe1_x_i : integer range 0 to 1023 := 680;
     signal pipe2_x_i : integer range 0 to 1023 := 900;
@@ -67,9 +68,10 @@ architecture rtl of game_logic is
 begin
 
     process(clk)
-        variable speed : integer;
-        variable hit   : boolean;
-        variable my    : integer;
+        variable speed    : integer;
+        variable hit      : boolean;
+        variable next_vel : integer;
+        variable next_y   : integer;
     begin
         if rising_edge(clk) then
 
@@ -78,6 +80,7 @@ begin
 
                 bird_y_i <= 224;
                 velocity <= 0;
+                flap_prev <= '0';
 
                 pipe1_x_i <= 680;
                 pipe2_x_i <= 900;
@@ -123,31 +126,28 @@ begin
                     end if;
 
                     -- Bird movement.
-                    -- Left mouse click makes it jump; otherwise gravity pulls it down.
-                    if left_click = '1' then
-                        velocity <= -7;
-                    elsif velocity < 8 then
-                        velocity <= velocity + 1;
+                    next_vel := velocity;
+
+                    if left_click = '1' and flap_prev = '0' then
+                        next_vel := -7;
+                    elsif next_vel < 8 then
+                        next_vel := next_vel + 1;
                     end if;
 
-                    if bird_y_i + velocity < 0 then
+                    next_y := bird_y_i + next_vel;
+
+                    if next_y < 0 then
                         bird_y_i <= 0;
                         velocity <= 0;
-                    elsif bird_y_i + velocity > 448 then
+                    elsif next_y > 448 then
                         bird_y_i <= 448;
                         velocity <= 0;
                     else
-                        bird_y_i <= bird_y_i + velocity;
+                        bird_y_i <= next_y;
+                        velocity <= next_vel;
                     end if;
 
-                    my := to_integer(unsigned(mouse_y));
-                    if my > 40 and my < 440 then
-                        if my > bird_y_i + 6 then
-                            bird_y_i <= bird_y_i + 2;
-                        elsif my + 6 < bird_y_i then
-                            bird_y_i <= bird_y_i - 2;
-                        end if;
-                    end if;
+                    flap_prev <= left_click;
 
                     -- Move and recycle pipe 1
                     if pipe1_x_i <= speed then

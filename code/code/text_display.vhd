@@ -22,7 +22,7 @@ architecture Behavioral of text_display is
     signal rom_out   : std_logic;
     signal text_en   : std_logic := '0';
 
-    constant MENU_TITLE : string := "FLAPPY FPGA";
+    constant MENU_TITLE : string := "ESCAPE EPSTEINS ISLAND";
     constant MENU_START : string := "KEY1 START";
     constant MENU_MODE1 : string := "SW1 UP TRAINING";
     constant MENU_MODE2 : string := "SW1 DOWN CHALLENGE";
