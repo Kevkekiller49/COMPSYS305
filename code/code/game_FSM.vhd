@@ -88,9 +88,8 @@ begin
                 end if;
 
             when TRAINING =>
-                if lives_zero = '1' then
-                    next_state <= GAME_OVER;
-                elsif pause_button = '1' then
+                -- Training mode has unlimited lives, so do not go to GAME_OVER on lives_zero.
+                if pause_button = '1' then
                     next_state <= PAUSED_TRAINING;
                 end if;
 

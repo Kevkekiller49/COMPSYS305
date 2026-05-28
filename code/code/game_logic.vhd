@@ -28,7 +28,6 @@ architecture rtl of game_logic is
 
     signal bird_y_i : integer range 0 to 448 := 224;
     signal velocity : integer range -12 to 12 := 0;
-    signal flap_prev : std_logic := '0';
 
     signal pipe1_x_i : integer range 0 to 1023 := 680;
     signal pipe2_x_i : integer range 0 to 1023 := 900;
@@ -68,10 +67,8 @@ architecture rtl of game_logic is
 begin
 
     process(clk)
-        variable speed    : integer;
-        variable hit      : boolean;
-        variable next_vel : integer;
-        variable next_y   : integer;
+        variable speed : integer;
+        variable hit   : boolean;
     begin
         if rising_edge(clk) then
 
@@ -80,7 +77,6 @@ begin
 
                 bird_y_i <= 224;
                 velocity <= 0;
-                flap_prev <= '0';
 
                 pipe1_x_i <= 680;
                 pipe2_x_i <= 900;
@@ -114,6 +110,7 @@ begin
                     if training_mode = '1' then
                         speed := 2;
                         level_i <= 1;
+                        lives_i <= 3;
                     elsif score_i < 5 then
                         speed := 2;
                         level_i <= 1;
@@ -126,28 +123,22 @@ begin
                     end if;
 
                     -- Bird movement.
-                    next_vel := velocity;
-
-                    if left_click = '1' and flap_prev = '0' then
-                        next_vel := -7;
-                    elsif next_vel < 8 then
-                        next_vel := next_vel + 1;
+                    -- Left mouse click makes it jump; otherwise gravity pulls it down.
+                    if left_click = '1' then
+                        velocity <= -7;
+                    elsif velocity < 8 then
+                        velocity <= velocity + 1;
                     end if;
 
-                    next_y := bird_y_i + next_vel;
-
-                    if next_y < 0 then
+                    if bird_y_i + velocity < 0 then
                         bird_y_i <= 0;
                         velocity <= 0;
-                    elsif next_y > 448 then
+                    elsif bird_y_i + velocity > 448 then
                         bird_y_i <= 448;
                         velocity <= 0;
                     else
-                        bird_y_i <= next_y;
-                        velocity <= next_vel;
+                        bird_y_i <= bird_y_i + velocity;
                     end if;
-
-                    flap_prev <= left_click;
 
                     -- Move and recycle pipe 1
                     if pipe1_x_i <= speed then
@@ -238,7 +229,10 @@ begin
                     elsif hit then
                         collision_cooldown <= 45;
 
-                        if shield_timer > 0 then
+                        if training_mode = '1' then
+                            -- Unlimited lives in training mode. Keep playing after collisions.
+                            lives_i <= 3;
+                        elsif shield_timer > 0 then
                             shield_timer <= 0;
                         elsif lives_i > 0 then
                             lives_i <= lives_i - 1;
@@ -269,7 +263,9 @@ begin
 
     lives <= std_logic_vector(to_unsigned(lives_i, 2));
     level <= std_logic_vector(to_unsigned(level_i, 2));
-    lives_zero <= '1' when lives_i = 0 else '0';
+    lives_zero <= '0' when training_mode = '1' else
+                  '1' when lives_i = 0 else
+                  '0';
 
     powerup_x <= std_logic_vector(to_unsigned(pwr_x_i, 10));
     powerup_y <= std_logic_vector(to_unsigned(pwr_y_i, 10));
