@@ -39,6 +39,7 @@ architecture wiring of game_top_level is
     signal game_active, training_mode, lives_zero : std_logic;
 	signal powerup_x, powerup_y : std_logic_vector(9 downto 0);
 	signal powerup_type, shield_active : std_logic;
+	signal click_latch : std_logic;
 
     -- Seven segment display digits
     signal score_tens, score_ones, level_disp, lives_disp : std_logic_vector(3 downto 0);
@@ -50,9 +51,11 @@ architecture wiring of game_top_level is
     signal reset            : std_logic;
     signal internal_button_1 : std_logic;
     signal internal_button_2 : std_logic;
-	
+	signal pixel_row_d, pixel_col_d : std_logic_vector(9 downto 0);
 	signal locked : std_logic;
 	signal raw_reset : std_logic;
+	signal btn1_prev : std_logic;
+	signal btn1_pulse : std_logic;
 
     -- Component declarations
     component VGA_SYNC is
@@ -170,27 +173,44 @@ begin
     -- Unused displays off (active low segments = all 1s)
     HEX4 <= (others => '1');
     HEX5 <= (others => '1');
+	
+	btn1_pulse <= internal_button_1 and not btn1_prev; 
+	
 
-    -- Score BCD extraction
-    process(score)
-        variable tempval : integer range 0 to 999;
-    begin
-        tempval    := to_integer(unsigned(score));
-        score_tens <= std_logic_vector(to_unsigned(tempval / 10, 4));
-        score_ones <= std_logic_vector(to_unsigned(tempval mod 10, 4));
-    end process;
+		process(clk_25)
+		begin
+			if rising_edge(clk_25) then
+				pixel_row_d    <= pixel_row;
+				pixel_column_d <= pixel_column;
+				btn1_prev <= internal_button_1;
+				if update_tick = '1' then
+					click_latch <= '0';  -- clear after consuming
+				elsif left_click = '1' then
+					click_latch <= '1';  -- latch any click
+				end if;
+			end if;
+		end process;
 
-    -- VGA pixel output: text takes priority over renderer
-    process(text_on, renderer_r, renderer_g, renderer_b)
-    begin
-        if text_on = '1' then
-            VGA_R <= "1111"; VGA_G <= "1111"; VGA_B <= "1111";
-        else
-            VGA_R <= (others => renderer_r);
-            VGA_G <= (others => renderer_g);
-            VGA_B <= (others => renderer_b);
-        end if;
-    end process;
+			-- Score BCD extraction
+			process(score)
+				variable tempval : integer range 0 to 999;
+			begin
+				tempval    := to_integer(unsigned(score));
+				score_tens <= std_logic_vector(to_unsigned(tempval / 10, 4));
+				score_ones <= std_logic_vector(to_unsigned(tempval mod 10, 4));
+			end process;
+
+			-- VGA pixel output: text takes priority over renderer
+			process(text_on, renderer_r, renderer_g, renderer_b)
+			begin
+				if text_on = '1' then
+					VGA_R <= "1111"; VGA_G <= "1111"; VGA_B <= "1111";
+				else
+					VGA_R <= (others => renderer_r);
+					VGA_G <= (others => renderer_g);
+					VGA_B <= (others => renderer_b);
+				end if;
+			end process;
 
     -- VGA sync controller (25MHz pixel clock)
     VGA_DRIVER : component VGA_SYNC
@@ -215,7 +235,7 @@ begin
         reset               => SW(0),
         mouse_data          => PS2_DAT,
         mouse_clk           => PS2_CLK,
-        left_button         => left_click,
+        left_button         => click_latch,
         right_button        => right_click,
         mouse_cursor_row    => mouse_y,
         mouse_cursor_column => mouse_x
@@ -226,7 +246,7 @@ begin
     port map(
         Clk           => clk_25,
         reset         => reset,
-        start_button  => internal_button_1,
+        start_button  => btn1_pulse ,
         pause_button  => internal_button_2,
         mode_switch   => SW(1),
         lives_zero    => lives_zero,
@@ -242,7 +262,7 @@ begin
         reset         => reset,
         game_active   => game_active,
         training_mode => training_mode,
-        left_click    => left_click,
+        click_latch    => click_latch,
         lfsr_value    => lfsr_value,
         mouse_y       => mouse_y,
         lives_zero    => lives_zero,
@@ -289,8 +309,8 @@ begin
     TEXT_UNIT : component text_display
     port map(
         clk          => clk_25,
-        pixel_row    => pixel_row,
-        pixel_col    => pixel_column,
+        pixel_row_d     => pixel_row,
+        pixel_column_d    => pixel_column,
         display_mode => display_mode,
         score        => score,
         lives        => lives,

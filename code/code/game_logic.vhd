@@ -22,11 +22,11 @@ architecture logic of game_logic is
 		collision <= '1' when
 		(sprite_y_internal >= 471) or
 		(sprite_y_internal <= 8) or
-		(pipe_x1_internal >= 80 and pipe_x1_internal <= 120 and
+		(pipe_x1_internal >= 100 and pipe_x1_internal <= 115 and
 		(sprite_y_internal < pipe_gap1_internal - 40 or sprite_y_internal > pipe_gap1_internal + 40)) or
-		(pipe_x2_internal >= 80 and pipe_x2_internal <= 120 and
+		(pipe_x2_internal >= 100 and pipe_x1_internal <= 115 and
 		(sprite_y_internal < pipe_gap2_internal - 40 or sprite_y_internal > pipe_gap2_internal + 40)) or
-		(pipe_x3_internal >= 80 and pipe_x3_internal <= 120 and
+		(pipe_x3_internal >= 100 and pipe_x1_internal <= 115 and
 		(sprite_y_internal < pipe_gap3_internal - 40 or sprite_y_internal > pipe_gap3_internal + 40))
 		else '0';
 		update_counter_process: process(clk)
@@ -112,19 +112,22 @@ architecture logic of game_logic is
 				elsif game_active = '1' and update_tick = '1' then
 					if pipe_x1_internal = 0 then
 						pipe_x1_internal <= to_unsigned(640,10);
+						-- pipe 1: bits 7:0
 						pipe_gap1_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
 					else
 						pipe_x1_internal <= pipe_x1_internal - 1;
 					end if;
 					if pipe_x2_internal = 0 then
 						pipe_x2_internal <= to_unsigned(640,10);
-						pipe_gap2_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
+						-- pipe 2: bits 8:1 (shifted)
+						pipe_gap2_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(8 downto 1));
 					else
 						pipe_x2_internal <= pipe_x2_internal - 1;
 					end if;
 					if pipe_x3_internal = 0 then
 						pipe_x3_internal <= to_unsigned(640,10);
-						pipe_gap3_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(7 downto 0));
+						-- pipe 3: bits 9:2
+						pipe_gap3_internal <= to_unsigned(100,10) + unsigned("00" & lfsr_value(9 downto 2));
 					else
 						pipe_x3_internal <= pipe_x3_internal - 1;
 					end if;
