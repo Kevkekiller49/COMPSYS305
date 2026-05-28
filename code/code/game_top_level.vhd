@@ -54,8 +54,8 @@ architecture wiring of game_top_level is
 	signal pixel_row_d, pixel_col_d : std_logic_vector(9 downto 0);
 	signal locked : std_logic;
 	signal raw_reset : std_logic;
-	signal btn1_prev : std_logic;
-	signal btn1_pulse : std_logic;
+	signal btn1_prev, btn2_prev : std_logic;
+	signal btn1_pulse, btn2_prev : std_logic;
 
     -- Component declarations
     component VGA_SYNC is
@@ -160,7 +160,10 @@ begin
     internal_button_2 <= not KEY(2);  -- pause
 
     -- Drive VGA vertical sync from internal signal
-    VGA_VS <= vert_sync_internal;
+    VGA_VS <= vert_sync_internal
+	VGA_R <= (others => red_out_internal);
+	VGA_G <= (others => green_out_internal);
+	VGA_B <= (others => blue_out_internal);
 
     -- lives_zero lights LED 0 as a hardware death indicator
     LEDR(0)           <= lives_zero;
@@ -174,7 +177,10 @@ begin
     HEX4 <= (others => '1');
     HEX5 <= (others => '1');
 	
+	
+	
 	btn1_pulse <= internal_button_1 and not btn1_prev; 
+	btn2_pulse <= internal_button_2 and not btn2_prev;
 	
 
 		process(clk_25)
@@ -183,6 +189,7 @@ begin
 				pixel_row_d    <= pixel_row;
 				pixel_column_d <= pixel_column;
 				btn1_prev <= internal_button_1;
+				btn2_prev <= internal_button_2
 				if update_tick = '1' then
 					click_latch <= '0';  -- clear after consuming
 				elsif left_click = '1' then
@@ -200,25 +207,14 @@ begin
 				score_ones <= std_logic_vector(to_unsigned(tempval mod 10, 4));
 			end process;
 
-			-- VGA pixel output: text takes priority over renderer
-			process(text_on, renderer_r, renderer_g, renderer_b)
-			begin
-				if text_on = '1' then
-					VGA_R <= "1111"; VGA_G <= "1111"; VGA_B <= "1111";
-				else
-					VGA_R <= (others => renderer_r);
-					VGA_G <= (others => renderer_g);
-					VGA_B <= (others => renderer_b);
-				end if;
-			end process;
 
     -- VGA sync controller (25MHz pixel clock)
     VGA_DRIVER : component VGA_SYNC
     port map(
         clock_25Mhz    => clk_25,
-        red            => renderer_r,
-        green          => renderer_g,
-        blue           => renderer_b,
+        red            => renderer_r or text_on,
+        green          => renderer_g or text_on,,
+        blue           => renderer_b or text_on,,
         red_out        => red_out_internal,
         green_out      => green_out_internal,
         blue_out       => blue_out_internal,
@@ -310,7 +306,7 @@ begin
     port map(
         clk          => clk_25,
         pixel_row_d     => pixel_row,
-        pixel_column_d    => pixel_column,
+        pixel_col_d    => pixel_column,
         display_mode => display_mode,
         score        => score,
         lives        => lives,
