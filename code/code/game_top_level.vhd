@@ -127,10 +127,12 @@ architecture wiring of game_top_level is
     component renderer is
         port(
             pixel_row, pixel_column       : in  std_logic_vector(9 downto 0);
+            pixel_x, pixel_y              : in  std_logic_vector(9 downto 0);
             sprite_y                      : in  std_logic_vector(9 downto 0);
             pipe_x1, pipe_x2, pipe_x3     : in  std_logic_vector(9 downto 0);
             pipe_gap1, pipe_gap2, pipe_gap3 : in  std_logic_vector(9 downto 0);
             powerup_x, powerup_y          : in  std_logic_vector(9 downto 0);
+            display_mode                  : in  std_logic_vector(1 downto 0);
             clk, reset                    : in  std_logic;
             red, green, blue              : out std_logic;
             powerup_type                  : in  std_logic;
@@ -310,6 +312,9 @@ begin
         blue          => renderer_b,
         powerup_x     => powerup_x,
         powerup_y     => powerup_y,
+        pixel_x       => pixel_column,
+        pixel_y       => pixel_row,
+        display_mode  => display_mode,
         powerup_type  => powerup_type,
         shield_active => shield_active
     );
