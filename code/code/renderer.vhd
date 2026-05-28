@@ -81,6 +81,247 @@ begin
         red   <= '0';
         green <= '0';
         blue  <= '1';
+		
+		-- =====================================================
+		-- GAME OVER ISLAND ART
+		-- =====================================================
+
+		if display_mode = "10" then
+
+			-- =================================================
+			-- CYAN SHALLOW WATER
+			-- =================================================
+
+			if pixel_x > 50 and pixel_x < 590 and
+			   pixel_y > 40 and pixel_y < 440 then
+
+				red   <= "0000";
+				green <= "1100";
+				blue  <= "1100";
+
+			end if;
+
+			-- =================================================
+			-- MAIN ISLAND BODY
+			-- =================================================
+
+			if pixel_x > 120 and pixel_x < 500 and
+			   pixel_y > 120 and pixel_y < 260 then
+
+				red   <= "0000";
+				green <= "1010";
+				blue  <= "0000";
+
+			end if;
+
+			-- =================================================
+			-- LEFT ANGLED SECTION
+			-- =================================================
+
+			if pixel_x > 50 and pixel_x < 120 then
+
+				if pixel_y > (180 - (pixel_x - 50)) and
+				   pixel_y < (200 + (pixel_x - 50)) then
+
+					red   <= "0000";
+					green <= "1010";
+					blue  <= "0000";
+
+				end if;
+
+			end if;
+
+			-- =================================================
+			-- RIGHT TAPERED SECTION
+			-- =================================================
+
+			if pixel_x > 500 and pixel_x < 560 then
+
+				if pixel_y > (120 + ((pixel_x - 500)/2)) and
+				   pixel_y < (260 - ((pixel_x - 500)/2)) then
+
+					red   <= "0000";
+					green <= "1010";
+					blue  <= "0000";
+
+				end if;
+
+			end if;
+
+			-- =================================================
+			-- LOWER TRIANGLE ISLAND
+			-- =================================================
+
+			if pixel_y > 280 and pixel_y < 430 then
+
+				if pixel_x > (320 - (pixel_y - 280)) and
+				   pixel_x < (320 + (pixel_y - 280)) then
+
+					red   <= "0000";
+					green <= "1010";
+					blue  <= "0000";
+
+				end if;
+
+			end if;
+
+			-- =================================================
+			-- HORIZONTAL RUNWAY
+			-- =================================================
+
+			if pixel_x > 140 and pixel_x < 420 and
+			   pixel_y > 170 and pixel_y < 185 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "0000";
+
+			end if;
+
+			-- =================================================
+			-- RIGHT RUNWAY
+			-- =================================================
+
+			if pixel_x > 390 and pixel_x < 510 and
+			   pixel_y > 180 and pixel_y < 195 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "0000";
+
+			end if;
+
+			-- =================================================
+			-- VERTICAL RUNWAY
+			-- =================================================
+
+			if pixel_x > 340 and pixel_x < 350 and
+			   pixel_y > 120 and pixel_y < 260 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "0000";
+
+			end if;
+
+			-- =================================================
+			-- LOWER RUNWAY
+			-- =================================================
+
+			if pixel_x > 250 and pixel_x < 265 and
+			   pixel_y > 280 and pixel_y < 390 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "0000";
+
+			end if;
+
+			-- =================================================
+			-- RIGHTMOST RUNWAY
+			-- =================================================
+
+			if pixel_x > 540 and pixel_x < 555 and
+			   pixel_y > 145 and pixel_y < 215 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "0000";
+
+			end if;
+
+			-- =================================================
+			-- BUILDINGS
+			-- =================================================
+
+			if pixel_x > 200 and pixel_x < 220 and
+			   pixel_y > 160 and pixel_y < 175 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "1111";
+
+			end if;
+
+			if pixel_x > 260 and pixel_x < 280 and
+			   pixel_y > 140 and pixel_y < 160 then
+
+				red   <= "1111";
+				green <= "1111";
+				blue  <= "1111";
+
+			end if;
+
+    if pixel_x > 470 and pixel_x < 500 and
+       pixel_y > 155 and pixel_y < 185 then
+
+        red   <= "1111";
+        green <= "1111";
+        blue  <= "1111";
+
+    end if;
+
+    if pixel_x > 450 and pixel_x < 475 and
+       pixel_y > 190 and pixel_y < 215 then
+
+        red   <= "1111";
+        green <= "1111";
+        blue  <= "1111";
+
+    end if;
+
+    if pixel_x > 490 and pixel_x < 510 and
+       pixel_y > 220 and pixel_y < 240 then
+
+        red   <= "1111";
+        green <= "1111";
+        blue  <= "1111";
+
+    end if;
+
+    -- Lower island buildings
+
+    if pixel_x > 170 and pixel_x < 200 and
+       pixel_y > 365 and pixel_y < 395 then
+
+        red   <= "1111";
+        green <= "1111";
+        blue  <= "1111";
+
+    end if;
+
+    if pixel_x > 200 and pixel_x < 230 and
+       pixel_y > 355 and pixel_y < 385 then
+
+        red   <= "1111";
+        green <= "1111";
+        blue  <= "1111";
+
+    end if;
+
+    -- =================================================
+    -- RED DOCKS
+    -- =================================================
+
+    if pixel_x > 50 and pixel_x < 75 and
+       pixel_y > 180 and pixel_y < 205 then
+
+        red   <= "1010";
+        green <= "0000";
+        blue  <= "0000";
+
+    end if;
+
+    if pixel_x > 58 and pixel_x < 75 and
+       pixel_y > 210 and pixel_y < 230 then
+
+        red   <= "1010";
+        green <= "0000";
+        blue  <= "0000";
+
+    end if;
+
+end if;
 
         -- Bird/shark sprite: 32 x 32 screen pixels 
         if c >= 100 and c <= 131 and r >= sy and r <= sy + 31 then
