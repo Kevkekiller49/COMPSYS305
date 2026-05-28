@@ -50,10 +50,10 @@ begin
 		green <= '0';
 		blue  <= '1';
 			-- check bird sprite first (col 100-115, row cy to cy+15)
-			if col >= 100 and col <= 115 and row >= cy and row <= cy+15 then
+			if col >= 100 and col <= 131 and row >= cy and row <= cy+31 then
 				sp := sprite_rom(to_integer(unsigned'("0" & frame)))(
-						  to_integer(row - cy))(
-						  to_integer(col - to_unsigned(100, 10)));
+							to_integer((row - cy) srl 1))(
+							to_integer((col - to_unsigned(100, 10)) srl 1));
 				if sp /= "010" then  -- not transparent
 					red   <= sp(2);
 					green <= sp(1);
@@ -95,8 +95,8 @@ begin
 
 			-- Shield active: magenta outline around bird
 			elsif shield_active = '1' and
-				  col >= 98 and col <= 117 and row >= cy - 2 and row <= cy + 17 and
-				  (col = 98 or col = 117 or row = cy - 2 or row = cy + 17) then
+				  col >= 98 and col <= 133 and row >= cy - 2 and row <= cy + 33 and
+				  (col = 98 or col = 133 or row = cy - 2 or row = cy + 33) then
 				red <= '1'; green <= '0'; blue <= '1';
 				end if;
 	end process;

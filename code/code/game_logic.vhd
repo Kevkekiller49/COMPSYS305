@@ -11,7 +11,7 @@ entity game_logic is
 end entity game_logic;
 
 architecture logic of game_logic is
-	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal, collision_hit,	powerup_collected : std_logic;
+	signal update_tick, collision, lives_zero_internal, powerup_type_internal, shield_internal, collision_hit,	powerup_collected, click_latch  : std_logic;
 	signal level_internal, lives_internal : unsigned(1 downto 0);
 	signal sprite_y_internal, pipe_x1_internal, pipe_x2_internal, pipe_x3_internal, pipe_gap1_internal, pipe_gap2_internal, pipe_gap3_internal, score_internal, powerup_x_internal, powerup_y_internal : unsigned(9 downto 0);
 	signal velocity : signed(9 downto 0);
@@ -22,11 +22,11 @@ architecture logic of game_logic is
 		collision <= '1' when
 		(sprite_y_internal >= 471) or
 		(sprite_y_internal <= 8) or
-		(pipe_x1_internal >= 100 and pipe_x1_internal <= 115 and
+		(pipe_x1_internal >= 100 and pipe_x1_internal <= 131 and
 		(sprite_y_internal < pipe_gap1_internal - 40 or sprite_y_internal > pipe_gap1_internal + 40)) or
-		(pipe_x2_internal >= 100 and pipe_x1_internal <= 115 and
+		(pipe_x2_internal >= 100 and pipe_x1_internal <= 131 and
 		(sprite_y_internal < pipe_gap2_internal - 40 or sprite_y_internal > pipe_gap2_internal + 40)) or
-		(pipe_x3_internal >= 100 and pipe_x1_internal <= 115 and
+		(pipe_x3_internal >= 100 and pipe_x1_internal <= 131 and
 		(sprite_y_internal < pipe_gap3_internal - 40 or sprite_y_internal > pipe_gap3_internal + 40))
 		else '0';
 		update_counter_process: process(clk)
@@ -56,6 +56,17 @@ architecture logic of game_logic is
 			end if;			
 		end process update_counter_process;
 		
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				if update_tick = '1' then
+					click_latch <= '0';
+				elsif left_click = '1' then
+					click_latch <= '1';
+				end if;
+			end if;
+		end process;
+		
 		Move_Sprite: process(clk)
 			variable new_pos       : signed(11 downto 0);
 			variable next_velocity : signed(9 downto 0);
@@ -69,7 +80,7 @@ architecture logic of game_logic is
 					velocity <= to_signed(0, 10);
 				elsif game_active = '1' and update_tick = '1' then
 					next_velocity := velocity;
-					if left_click = '1' then
+					if click_latch = '1' then
 						next_velocity := to_signed(-10, 10);
 					else
 						if next_velocity < to_signed(12, 10) then

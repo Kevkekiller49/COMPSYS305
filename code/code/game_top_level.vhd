@@ -39,7 +39,6 @@ architecture wiring of game_top_level is
     signal game_active, training_mode, lives_zero : std_logic;
 	signal powerup_x, powerup_y : std_logic_vector(9 downto 0);
 	signal powerup_type, shield_active : std_logic;
-	signal click_latch : std_logic;
 
     -- Seven segment display digits
     signal score_tens, score_ones, level_disp, lives_disp : std_logic_vector(3 downto 0);
@@ -189,12 +188,7 @@ begin
 				pixel_row_d    <= pixel_row;
 				pixel_column_d <= pixel_column;
 				btn1_prev <= internal_button_1;
-				btn2_prev <= internal_button_2
-				if update_tick = '1' then
-					click_latch <= '0';  -- clear after consuming
-				elsif left_click = '1' then
-					click_latch <= '1';  -- latch any click
-				end if;
+				btn2_prev <= internal_button_2;
 			end if;
 		end process;
 
@@ -231,7 +225,7 @@ begin
         reset               => SW(0),
         mouse_data          => PS2_DAT,
         mouse_clk           => PS2_CLK,
-        left_button         => click_latch,
+        left_button         => left_click,
         right_button        => right_click,
         mouse_cursor_row    => mouse_y,
         mouse_cursor_column => mouse_x
@@ -258,7 +252,7 @@ begin
         reset         => reset,
         game_active   => game_active,
         training_mode => training_mode,
-        click_latch    => click_latch,
+        left_click    => left_click,
         lfsr_value    => lfsr_value,
         mouse_y       => mouse_y,
         lives_zero    => lives_zero,
